@@ -174,31 +174,17 @@
                             </div>
                         </div>
                         <div class="create-taboo__selects-row">
-                        <div class="create-taboo__checkbox">
-                        <div class="create-taboo__checkbox-row">
-                            <p>Select word pack(s) <span style="color:#ff4d4d;">*</span></p>
-                            <p id="wordpack-error" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-bottom:8px;">Please select at least one word pack.</p>
-
-                            <!-- Official Pack -->
-                            <div class="checkbox-row">
-                                <input type="checkbox" class="checkbox-input wordpack-checkbox" id="official-scipher" onchange="selectOnePack('official-scipher')">
-                                <label for="official-scipher" class="checkbox-label">Official Scipher TABOO Pack (9750 words)</label>
-                                <span class="checkbox-checkmark"></span>
-                            </div>
-
-                            <!-- Custom Words -->
-                            <div class="checkbox-row" style="margin-top:8px;">
-                                <input type="checkbox" class="checkbox-input wordpack-checkbox" id="custom-words-toggle" onchange="selectOnePack('custom-words-toggle')">
-                                <label for="custom-words-toggle" class="checkbox-label">Add your own words</label>
-                                <span class="checkbox-checkmark"></span>
-                            </div>
-
-                            <!-- Custom Words Input -->
-                            <div id="custom-words-section" style="display:none; margin-top:12px;">
-                                <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:14px;">
-                                    <label style="font-size:0.85rem; color:rgba(255,255,255,0.7); display:block; margin-bottom:8px;">
-                                        Enter your words separated by commas
-                                        <span id="word-count-label" style="color:rgba(255,255,255,0.4); margin-left:8px;">(0 / 500 words)</span>
+                            <div class="form-row">
+                                <label for="word-pack-select">Select word pack(s) <span style="color:#ff4d4d;">*</span></label>
+                                <select id="word-pack-select" onchange="onPackSelect()">
+                                    <option value="">-- Choose a word pack --</option>
+                                    <option value="official">Official Scipher TABOO Pack (9750 words)</option>
+                                    <option value="custom">Add your own words</option>
+                                </select>
+                                <div id="custom-words-section" style="display:none; margin-top:12px;">
+                                    <label style="font-size:0.85rem; color:rgba(255,255,255,0.7); display:block; margin-bottom:6px;">
+                                        Enter words separated by commas
+                                        <span id="word-count-label" style="color:rgba(255,255,255,0.4); margin-left:6px;">(0 / 500 words)</span>
                                     </label>
                                     <textarea
                                         id="custom-words-input"
@@ -206,16 +192,11 @@
                                         rows="4"
                                         placeholder="e.g. Rocket, Telescope, Gravity, Orbit, Satellite..."
                                         oninput="countCustomWords()"
-                                        style="resize:vertical; min-height:90px; width:100%; box-sizing:border-box;"
+                                        style="resize:vertical; min-height:80px; width:100%; box-sizing:border-box; margin-top:4px;"
                                     ></textarea>
                                     <p id="custom-words-error" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;"></p>
-                                    <p style="color:rgba(255,255,255,0.35); font-size:0.75rem; margin-top:6px;">
-                                        Maximum 500 words. These will be mixed into the game alongside the official pack if both are selected.
-                                    </p>
                                 </div>
                             </div>
-
-                        </div><!-- checkbox -->
                         </div><!-- selects-row -->
                     </div><!-- selects row4 -->
 
@@ -296,38 +277,28 @@
 <script src="./js/auth.js"></script>
 
 <script>
-    // ── Radio-like: only one pack can be selected at a time ──
-    function selectOnePack(selected) {
-        var packs = ['official-scipher', 'custom-words-toggle'];
-        packs.forEach(function(id) {
-            if (id !== selected) {
-                document.getElementById(id).checked = false;
-            }
-        });
-        // Handle custom words section toggle
-        var customChecked = document.getElementById('custom-words-toggle').checked;
+    // ── Word pack dropdown handler ────────────────────────────
+    function onPackSelect() {
+        var val = document.getElementById('word-pack-select').value;
         var section = document.getElementById('custom-words-section');
-        section.style.display = customChecked ? 'block' : 'none';
-        if (!customChecked) {
+        section.style.display = val === 'custom' ? 'block' : 'none';
+        if (val !== 'custom') {
             document.getElementById('custom-words-input').value = '';
             document.getElementById('word-count-label').textContent = '(0 / 500 words)';
             document.getElementById('custom-words-error').style.display = 'none';
         }
-        validateWordPack();
         checkFormReady();
     }
 
-    // ── Enable/disable Create Room button based on required fields ──
+    // ── Enable/disable Create Room button ─────────────────────
     function checkFormReady() {
         var roomName = document.getElementById('room-name').value.trim();
-        var officialChecked = document.getElementById('official-scipher').checked;
-        var customChecked = document.getElementById('custom-words-toggle').checked;
+        var packVal = document.getElementById('word-pack-select').value;
         var btn = document.getElementById('create-room-btn');
 
-        var ready = roomName.length > 0 && (officialChecked || customChecked);
+        var ready = roomName.length > 0 && packVal !== '';
 
-        // If custom words selected, also need at least one word entered
-        if (customChecked) {
+        if (packVal === 'custom') {
             var input = document.getElementById('custom-words-input').value;
             var words = input.split(',').map(function(w){ return w.trim(); }).filter(function(w){ return w.length > 0; });
             ready = ready && words.length > 0 && words.length <= 500;
@@ -336,18 +307,6 @@
         btn.disabled = !ready;
         btn.style.opacity = ready ? '1' : '0.4';
         btn.style.cursor = ready ? 'pointer' : 'not-allowed';
-    }
-
-    // ── Toggle custom words textbox ──────────────────────────
-    function toggleCustomWords() {
-        var toggle = document.getElementById('custom-words-toggle');
-        var section = document.getElementById('custom-words-section');
-        section.style.display = toggle.checked ? 'block' : 'none';
-        if (!toggle.checked) {
-            document.getElementById('custom-words-input').value = '';
-            document.getElementById('word-count-label').textContent = '(0 / 500 words)';
-            document.getElementById('custom-words-error').style.display = 'none';
-        }
     }
 
     // ── Live word counter ─────────────────────────────────────
@@ -368,26 +327,20 @@
         checkFormReady();
     }
 
-    // ── Validate at least one pack selected ──────────────────
+    // ── Validate word pack selected ──────────────────────────
     function validateWordPack() {
-        var official = document.getElementById('official-scipher').checked;
-        var custom = document.getElementById('custom-words-toggle').checked;
-        var errorEl = document.getElementById('wordpack-error');
-        if (!official && !custom) {
-            errorEl.style.display = 'block';
-            return false;
-        }
-        errorEl.style.display = 'none';
-        return true;
+        var val = document.getElementById('word-pack-select').value;
+        return val !== '';
     }
 
     // ── Create room with full validation ─────────────────────
     function handleCreateRoom() {
         var roomName = document.getElementById('room-name').value.trim();
         var roomNameError = document.getElementById('room-name-error');
-        var customToggle = document.getElementById('custom-words-toggle').checked;
+        var packVal = document.getElementById('word-pack-select').value;
         var customInput = document.getElementById('custom-words-input').value;
         var customError = document.getElementById('custom-words-error');
+        var customToggle = packVal === 'custom';
 
         // 1. Room name required
         if (!roomName) {
@@ -399,7 +352,7 @@
 
         // 2. At least one word pack must be selected
         if (!validateWordPack()) {
-            document.getElementById('wordpack-error').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('word-pack-select').focus();
             return;
         }
 
@@ -431,7 +384,7 @@
             difficulty: document.getElementById('standard-mode-difficulty').value,
             timePerTurn: document.getElementById('time-bank').value,
             wordsPerTurn: document.getElementById('words-per-turn').value,
-            useOfficialPack: document.getElementById('official-scipher').checked,
+            useOfficialPack: document.getElementById('word-pack-select').value === 'official',
             customWords: customWords
         }));
 
