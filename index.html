@@ -16,7 +16,7 @@
 
 <!-- Auth guard -->
 <script>
-    if (!SipherAPI.isLoggedIn()) {
+    if (!localStorage.getItem("scipher_user")) {
         window.location.replace('./login.html');
     }
 </script>
@@ -436,7 +436,7 @@
     loadLeaderboard();
 
     // ── Realtime leaderboard via Socket.IO ─────────────────────────────────
-    const BACKEND_URL = 'https://scipher-backend-production.up.railway.app';// ← Replace with your Render URL
+    const BACKEND_URL = 'https://your-backend.onrender.com'; // ← Replace with your Render URL
     const socket = io(BACKEND_URL, {
         auth: {
             token: SipherAPI.getToken()
@@ -481,7 +481,7 @@
         const newUsername = document.getElementById('user-name').value.trim();
         if (!newUsername) return;
 
-        const res = await fetch('https://scipher-backend-production.up.railway.app/auth/username', {
+        const res = await fetch('https://your-backend.onrender.com/auth/username', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', ...{'Authorization': `Bearer ${SipherAPI.getToken()}`} },
             body: JSON.stringify({ username: newUsername })
