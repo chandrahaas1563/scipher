@@ -14,9 +14,11 @@
 
 <!-- If already logged in, skip to main page -->
 <script>
-    if (SipherAPI.isLoggedIn()) {
-        window.location.replace('./index.html');
-    }
+    (function() {
+        if (localStorage.getItem('scipher_user')) {
+            window.location.replace('./index.html');
+        }
+    })();
 </script>
 
 <main class="main main-bg">
@@ -39,16 +41,18 @@
         </div>
     </div>
 
-    <!-- Login / Register Card -->
+    <!-- Auth Card -->
     <div class="auth-wrapper">
         <div class="card auth-card">
-            <!-- Tabs -->
+
+            <!-- Tabs: Sign In | Create Account | Guest -->
             <div class="auth-tabs">
                 <button class="auth-tab active" id="tab-login" onclick="showTab('login')">Sign In</button>
                 <button class="auth-tab" id="tab-register" onclick="showTab('register')">Create Account</button>
+                <button class="auth-tab" id="tab-guest" onclick="showTab('guest')">Guest</button>
             </div>
 
-            <!-- ── LOGIN FORM ── -->
+            <!-- ── SIGN IN FORM ── -->
             <div id="form-login" class="card-body">
                 <p id="login-error" class="auth-error" style="display:none;"></p>
                 <div class="form-row">
@@ -64,17 +68,11 @@
                         Sign In
                     </button>
                 </div>
-                <div style="text-align:center; margin-top:14px;">
-                    <a href="./guest-room.html" style="color:rgba(255,255,255,0.45); font-size:0.85rem; text-decoration:none;">
-                        Continue as Guest
-                    </a>
-                </div>
             </div>
 
-            <!-- ── REGISTER FORM ── -->
+            <!-- ── CREATE ACCOUNT FORM ── -->
             <div id="form-register" class="card-body" style="display:none;">
                 <p id="register-error" class="auth-error" style="display:none;"></p>
-                <p id="register-success" class="auth-success" style="display:none;"></p>
                 <div class="form-row">
                     <label for="reg-username">Username</label>
                     <input type="text" id="reg-username" class="form-row-input" placeholder="Choose a username" autocomplete="username">
@@ -93,6 +91,29 @@
                     </button>
                 </div>
             </div>
+
+            <!-- ── GUEST FORM ── -->
+            <div id="form-guest" class="card-body" style="display:none;">
+                <p id="guest-error" class="auth-error" style="display:none;"></p>
+                <p style="color:rgba(255,255,255,0.45); font-size:0.82rem; margin-bottom:16px;">
+                    Play without an account. Guest progress is not saved.
+                </p>
+                <div class="form-row">
+                    <label for="guest-name">Display Name</label>
+                    <input type="text" id="guest-name" class="form-row-input" placeholder="Enter a guest name" maxlength="20" autocomplete="off">
+                </div>
+                <div class="form-button" style="margin-top:20px;">
+                    <button type="button" class="btn form-button-btn" id="guest-btn" onclick="handleGuest()">
+                        Continue as Guest
+                    </button>
+                </div>
+                <div style="text-align:center; margin-top:14px;">
+                    <a href="javascript:void(0)" onclick="showTab('register')" style="color:rgba(0,229,255,0.7); font-size:0.82rem; text-decoration:none;">
+                        Want to save your progress? Create an account →
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 </main>
@@ -105,21 +126,15 @@
         padding: 20px;
         margin-top: 16px;
     }
-    .auth-card {
-        width: 100%;
-        max-width: 420px;
-    }
-    .auth-tabs {
-        display: flex;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
+    .auth-card { width: 100%; max-width: 420px; }
+    .auth-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .auth-tab {
         flex: 1;
-        padding: 14px;
+        padding: 12px 6px;
         background: transparent;
         border: none;
-        color: rgba(255,255,255,0.45);
-        font-size: 0.95rem;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.88rem;
         cursor: pointer;
         transition: all 0.2s;
     }
@@ -135,33 +150,28 @@
         background: rgba(255,77,77,0.1);
         border-radius: 6px;
     }
-    .auth-success {
-        color: #4dff91;
-        font-size: 0.85rem;
-        margin-bottom: 12px;
-        padding: 8px 12px;
-        background: rgba(77,255,145,0.1);
-        border-radius: 6px;
-    }
     .form-row { margin-bottom: 16px; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .card-body { padding: 24px; }
 </style>
 
 <script>
     function showTab(tab) {
-        document.getElementById('form-login').style.display = tab === 'login' ? '' : 'none';
-        document.getElementById('form-register').style.display = tab === 'register' ? '' : 'none';
-        document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-        document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+        ['login','register','guest'].forEach(function(t) {
+            document.getElementById('form-' + t).style.display = t === tab ? '' : 'none';
+            document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+        });
     }
 
-    // Enter key submits active form
-    document.addEventListener('keydown', (e) => {
+    // Enter key submits whichever tab is active
+    document.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter') return;
-        const loginVisible = document.getElementById('form-login').style.display !== 'none';
-        loginVisible ? handleLogin() : handleRegister();
+        if (document.getElementById('form-login').style.display !== 'none') handleLogin();
+        else if (document.getElementById('form-register').style.display !== 'none') handleRegister();
+        else if (document.getElementById('form-guest').style.display !== 'none') handleGuest();
     });
 
+    // ── Sign In ──────────────────────────────────────────────
     async function handleLogin() {
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value.trim();
@@ -177,10 +187,8 @@
 
         btn.disabled = true;
         btn.textContent = 'Signing in...';
-
         try {
             const data = await SipherAPI.login(username, password);
-
             if (data.error) {
                 errorEl.textContent = data.error;
                 errorEl.style.display = 'block';
@@ -197,17 +205,15 @@
         }
     }
 
+    // ── Create Account ───────────────────────────────────────
     async function handleRegister() {
         const username = document.getElementById('reg-username').value.trim();
         const email = document.getElementById('reg-email').value.trim();
         const password = document.getElementById('reg-password').value.trim();
         const errorEl = document.getElementById('register-error');
-        const successEl = document.getElementById('register-success');
         const btn = document.getElementById('register-btn');
 
         errorEl.style.display = 'none';
-        successEl.style.display = 'none';
-
         if (!username || !email || !password) {
             errorEl.textContent = 'All fields are required.';
             errorEl.style.display = 'block';
@@ -221,10 +227,8 @@
 
         btn.disabled = true;
         btn.textContent = 'Creating account...';
-
         try {
             const data = await SipherAPI.register(username, email, password);
-
             if (data.error) {
                 errorEl.textContent = data.error;
                 errorEl.style.display = 'block';
@@ -239,6 +243,35 @@
             btn.disabled = false;
             btn.textContent = 'Create Account';
         }
+    }
+
+    // ── Guest ────────────────────────────────────────────────
+    function handleGuest() {
+        const name = document.getElementById('guest-name').value.trim();
+        const errorEl = document.getElementById('guest-error');
+
+        errorEl.style.display = 'none';
+        if (!name) {
+            errorEl.textContent = 'Please enter a display name.';
+            errorEl.style.display = 'block';
+            document.getElementById('guest-name').focus();
+            return;
+        }
+        if (name.length < 2) {
+            errorEl.textContent = 'Name must be at least 2 characters.';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        // Save guest session — no token, isGuest: true
+        localStorage.setItem('scipher_user', JSON.stringify({
+            username: name,
+            isGuest: true,
+            trophy_count: 0
+        }));
+        // No scipher_token set — auth.js allows guests through via isGuest flag
+
+        window.location.href = './index.html';
     }
 </script>
 
