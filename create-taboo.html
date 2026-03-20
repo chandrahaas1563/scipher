@@ -94,7 +94,7 @@
                             <div class="form-row">
                                 <!-- ✅ Room Name is now required -->
                                 <label for="room-name">Room Name <span style="color:#ff4d4d;">*</span></label>
-                                <input type="text" name="room-name" id="room-name" class="form-row-input" placeholder="Enter room name" required>
+                                <input type="text" name="room-name" id="room-name" class="form-row-input" placeholder="Enter room name" oninput="checkFormReady()" required>
                                 <p id="room-name-error" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-top:4px;">Room name is required.</p>
                             </div>
                         </div>
@@ -133,23 +133,36 @@
                         </div>
                     </div>
 
-                    <!-- Row 3: Difficulty Level (renamed + new options) -->
-                    <div class="form-row">
-                        <!-- ✅ Renamed label + new options -->
-                        <label for="standard-mode-difficulty">Difficulty Level</label>
-                        <select name="standard-mode-difficulty" id="standard-mode-difficulty">
-                            <option value="easy">Easy</option>
-                            <option value="hard">Hard</option>
-                            <option value="insane">Insane</option>
-                        </select>
-                        <p class="form-row-text mb-8">Changes the weighting of easy/medium/hard/insane words</p>
-                    </div>
-
-                    <!-- Row 4: Time per turn + Words per turn -->
+                    <!-- Row 3: Difficulty Level | Words per turn -->
                     <div class="create-taboo__selects">
                         <div class="create-taboo__selects-row">
                             <div class="form-row">
-                                <!-- ✅ Renamed + new options -->
+                                <label for="standard-mode-difficulty">Difficulty Level</label>
+                                <select name="standard-mode-difficulty" id="standard-mode-difficulty" onchange="checkFormReady()">
+                                    <option value="easy">Easy</option>
+                                    <option value="hard">Hard</option>
+                                    <option value="insane">Insane</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="create-taboo__selects-row">
+                            <div class="form-row">
+                                <label for="words-per-turn">Words per turn</label>
+                                <select name="words-per-turn" id="words-per-turn" onchange="checkFormReady()">
+                                    <option value="6" selected>6</option>
+                                    <option value="8">8</option>
+                                    <option value="10">10</option>
+                                    <option value="12">12</option>
+                                    <option value="14">14</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Time (Each Turn) | Word packs -->
+                    <div class="create-taboo__selects" style="align-items:flex-start;">
+                        <div class="create-taboo__selects-row">
+                            <div class="form-row">
                                 <label for="time-bank">Time (Each Turn)</label>
                                 <select name="time-bank" id="time-bank">
                                     <option value="40">40 seconds</option>
@@ -158,42 +171,24 @@
                                     <option value="85">85 seconds</option>
                                     <option value="100">100 seconds</option>
                                 </select>
-                                <p class="form-row-text">Default is 60 seconds</p>
                             </div>
                         </div>
                         <div class="create-taboo__selects-row">
-                            <div class="form-row">
-                                <!-- ✅ Updated options -->
-                                <label for="words-per-turn">Words per turn</label>
-                                <select name="words-per-turn" id="words-per-turn">
-                                    <option value="6">6</option>
-                                    <option value="7" selected>7</option>
-                                    <option value="8">8</option>
-                                    <option value="10">10</option>
-                                    <option value="12">12</option>
-                                    <option value="14">14</option>
-                                </select>
-                                <p class="form-row-text">6-8 is recommended. For word challenge it should be set to 2 or 3</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Word Packs -->
-                    <div class="create-taboo__checkbox">
+                        <div class="create-taboo__checkbox">
                         <div class="create-taboo__checkbox-row">
                             <p>Select word pack(s) <span style="color:#ff4d4d;">*</span></p>
                             <p id="wordpack-error" style="color:#ff4d4d; font-size:0.8rem; display:none; margin-bottom:8px;">Please select at least one word pack.</p>
 
                             <!-- Official Pack -->
                             <div class="checkbox-row">
-                                <input type="checkbox" class="checkbox-input wordpack-checkbox" id="official-scipher" onchange="validateWordPack()">
+                                <input type="checkbox" class="checkbox-input wordpack-checkbox" id="official-scipher" onchange="selectOnePack('official-scipher')">
                                 <label for="official-scipher" class="checkbox-label">Official Scipher TABOO Pack (9750 words)</label>
                                 <span class="checkbox-checkmark"></span>
                             </div>
 
                             <!-- Custom Words -->
                             <div class="checkbox-row" style="margin-top:8px;">
-                                <input type="checkbox" class="checkbox-input wordpack-checkbox" id="custom-words-toggle" onchange="toggleCustomWords(); validateWordPack();">
+                                <input type="checkbox" class="checkbox-input wordpack-checkbox" id="custom-words-toggle" onchange="selectOnePack('custom-words-toggle')">
                                 <label for="custom-words-toggle" class="checkbox-label">Add your own words</label>
                                 <span class="checkbox-checkmark"></span>
                             </div>
@@ -220,15 +215,16 @@
                                 </div>
                             </div>
 
-                        </div>
-                    </div>
+                        </div><!-- checkbox -->
+                        </div><!-- selects-row -->
+                    </div><!-- selects row4 -->
 
                 </div>
             </div>
 
             <div class="form-button">
                 <!-- ✅ Changed to button so we can validate before proceeding -->
-                <button type="button" class="btn form-button-btn next-btn btn-sm-block" onclick="handleCreateRoom()">
+                <button type="button" class="btn form-button-btn next-btn btn-sm-block" id="create-room-btn" onclick="handleCreateRoom()" disabled style="opacity:0.4; cursor:not-allowed;">
                     <img src="./assets/images/checked-icon.svg" alt="icon">
                     <span>Create room</span>
                 </button>
@@ -300,6 +296,48 @@
 <script src="./js/auth.js"></script>
 
 <script>
+    // ── Radio-like: only one pack can be selected at a time ──
+    function selectOnePack(selected) {
+        var packs = ['official-scipher', 'custom-words-toggle'];
+        packs.forEach(function(id) {
+            if (id !== selected) {
+                document.getElementById(id).checked = false;
+            }
+        });
+        // Handle custom words section toggle
+        var customChecked = document.getElementById('custom-words-toggle').checked;
+        var section = document.getElementById('custom-words-section');
+        section.style.display = customChecked ? 'block' : 'none';
+        if (!customChecked) {
+            document.getElementById('custom-words-input').value = '';
+            document.getElementById('word-count-label').textContent = '(0 / 500 words)';
+            document.getElementById('custom-words-error').style.display = 'none';
+        }
+        validateWordPack();
+        checkFormReady();
+    }
+
+    // ── Enable/disable Create Room button based on required fields ──
+    function checkFormReady() {
+        var roomName = document.getElementById('room-name').value.trim();
+        var officialChecked = document.getElementById('official-scipher').checked;
+        var customChecked = document.getElementById('custom-words-toggle').checked;
+        var btn = document.getElementById('create-room-btn');
+
+        var ready = roomName.length > 0 && (officialChecked || customChecked);
+
+        // If custom words selected, also need at least one word entered
+        if (customChecked) {
+            var input = document.getElementById('custom-words-input').value;
+            var words = input.split(',').map(function(w){ return w.trim(); }).filter(function(w){ return w.length > 0; });
+            ready = ready && words.length > 0 && words.length <= 500;
+        }
+
+        btn.disabled = !ready;
+        btn.style.opacity = ready ? '1' : '0.4';
+        btn.style.cursor = ready ? 'pointer' : 'not-allowed';
+    }
+
     // ── Toggle custom words textbox ──────────────────────────
     function toggleCustomWords() {
         var toggle = document.getElementById('custom-words-toggle');
@@ -327,6 +365,7 @@
         } else {
             errorEl.style.display = 'none';
         }
+        checkFormReady();
     }
 
     // ── Validate at least one pack selected ──────────────────
