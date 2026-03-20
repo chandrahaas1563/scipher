@@ -8,883 +8,884 @@
     <link rel="stylesheet" href="./css/app.css">
     <link rel="stylesheet" href="./css/scipher.css">
     <title>Taboo Player</title>
+    <style>
+        /* ── Team colour overrides ── */
+        .team-red   { background: linear-gradient(135deg, #c0392b, #e74c3c) !important; }
+        .team-blue  { background: linear-gradient(135deg, #1a5276, #2980b9) !important; }
+        .score-red  { background: rgba(192,57,43,0.25) !important; border: 1px solid rgba(231,76,60,0.5) !important; }
+        .score-blue { background: rgba(41,128,185,0.25) !important; border: 1px solid rgba(41,128,185,0.5) !important; }
+
+        /* ── Join team buttons ── */
+        .join-team-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 0;
+        }
+        .join-team-block .team-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.6);
+        }
+        .join-team-block .join-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 6px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .join-team-block .join-btn:hover { background: rgba(255,255,255,0.25); }
+
+        /* ── Room share banner ── */
+        #room-share-banner {
+            background: rgba(0,229,255,0.08);
+            border: 1px solid rgba(0,229,255,0.25);
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        #room-share-banner p { color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 0; }
+        #room-share-banner .room-url {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            padding: 5px 12px;
+            color: #00e5ff;
+            font-size: 0.8rem;
+            font-family: monospace;
+            flex: 1;
+            min-width: 200px;
+        }
+        #room-share-banner .copy-btn {
+            background: rgba(0,229,255,0.2);
+            border: 1px solid rgba(0,229,255,0.4);
+            color: #00e5ff;
+            padding: 5px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        #room-share-banner .copy-btn:hover { background: rgba(0,229,255,0.35); }
+
+        /* ── Word card ── */
+        #current-word-display {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        #target-word { color: #fff; font-size: 2rem; font-weight: 700; margin: 8px 0 16px; }
+        .taboo-word-tag {
+            background: rgba(255,50,50,0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255,50,50,0.4);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin: 3px;
+        }
+
+        /* ── Score boxes ── */
+        #score-display { display: flex; gap: 12px; margin-bottom: 14px; }
+        .score-box { flex: 1; border-radius: 8px; padding: 10px 16px; text-align: center; }
+        .score-box .score-team-label { font-size: 0.7rem; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+        .score-box .score-val { font-size: 1.6rem; font-weight: 700; }
+        .score-red  .score-val { color: #e74c3c; }
+        .score-blue .score-val { color: #2980b9; }
+
+        /* ── Game controls ── */
+        #game-controls { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+        .ctrl-btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        #start-turn-btn  { background: #00e5ff; color: #000; }
+        #skip-btn        { background: rgba(255,100,0,0.4); color: #fff; display: none; }
+        #end-turn-btn    { background: rgba(255,50,50,0.4); color: #fff; display: none; }
+        .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── Waiting state ── */
+        #waiting-msg {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.95rem;
+        }
+    </style>
 </head>
 <body>
-    <div class="main-bg">
-        <!-- Lights and Background Images -->
-        <div class="main-bg__lights">
-            <div class="main-bg__light main-bg__light-1"></div>
-            <div class="main-bg__light main-bg__light-2"></div>
-            <div class="main-bg__light main-bg__light-3"></div>
-            <div class="main-bg__light main-bg__light-4"></div>
+
+<script src="./js/api.js"></script>
+
+<div class="main-bg">
+    <div class="main-bg__lights">
+        <div class="main-bg__light main-bg__light-1"></div>
+        <div class="main-bg__light main-bg__light-2"></div>
+        <div class="main-bg__light main-bg__light-3"></div>
+        <div class="main-bg__light main-bg__light-4"></div>
+    </div>
+    <div class="dots-top"></div>
+    <div class="dots-bottom"><img src="./assets/images/bg-dots-bottom.png" alt=""></div>
+    <div class="main-bg__right-ligh"></div>
+
+    <!-- ====== Header ====== -->
+    <header class="header">
+        <div class="header__logo">
+            <img src="./assets/images/logo.png" alt="Logo" class="header__logo-img">
         </div>
-        <div class="dots-top"></div>
-        <div class="dots-bottom">
-            <img src="./assets/images/bg-dots-bottom.png" alt="">
+        <div class="header__profile">
+            <button class="header__profile-btn" onclick="profileToggle()">
+                <div class="header__profile-image">
+                    <img src="./assets/images/main-select.png" alt="image">
+                </div>
+                <div class="header__profile-info">
+                    <div class="header__profile-name">
+                        <img src="./assets/images/cup_icon.svg" alt="cup icon">
+                        <h6 id="nav-username">...</h6>
+                    </div>
+                    <div class="header__profile-counter">
+                        <img src="./assets/images/cup-orange.svg" alt="">
+                        <p id="nav-trophy-count">0</p>
+                    </div>
+                </div>
+                <div><img src="./assets/images/drop_icon.svg" alt="icon"></div>
+            </button>
+            <ul class="profile__dropdown" id="profile-dropdown">
+                <li class="profile__dropdown-item">
+                    <a href="./user-profile.html" class="profile__dropdown-link">
+                        <img src="./assets/images/profile-icon.svg" alt="profile icon">
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="profile__dropdown-item">
+                    <a href="javascript:void(0)" class="profile__dropdown-link" onclick="toggleUserSettings()">
+                        <img src="./assets/images/settings-icon.svg" alt="settings icon">
+                        <span>User settings</span>
+                    </a>
+                </li>
+                <li class="profile__dropdown-item">
+                    <a href="javascript:void(0)" class="profile__dropdown-link" onclick="logout()">
+                        <img src="./assets/images/logout-icon.svg" alt="logout icon">
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
         </div>
-        <div class="main-bg__right-ligh"></div>
+    </header>
 
-        <!-- ====== Header ====== -->
-        <header class="header">
-            <div class="header__logo">
-                <img src="./assets/images/logo.png" alt="Logo" class="header__logo-img">
-            </div>
-            <div class="header__profile">
-                <button class="header__profile-btn" onclick="profileToggle()">
-                    <div class="header__profile-image">
-                        <img src="./assets/images/main-select.png" alt="image">
-                    </div>
-                    <div class="header__profile-info">
-                        <div class="header__profile-name">
-                            <img src="./assets/images/cup_icon.svg" alt="cup icon">
-                            <h6>Pink_bob</h6>
-                        </div>
-                        <div class="header__profile-counter">
-                            <img src="./assets/images/cup-orange.svg" alt="">
-                            <p>514</p>
-                        </div>
-                    </div>
-                    <div>
-                        <img src="./assets/images/drop_icon.svg" alt="icon">
-                    </div>
-                </button>
+    <main class="scipher">
+        <div class="scipher-container">
+            <div class="scipher__boards">
+                <div class="scipher__boards-header">
 
-                <!-- Profile Dropdown -->
-                <ul class="profile__dropdown" id="profile-dropdown">
-                    <li class="profile__dropdown-item">
-                        <a href="./user-profile.html" class="profile__dropdown-link">
-                            <img src="./assets/images/profile-icon.svg" alt="profile icon">
-                            <span>Profile</span>
-                        </a>
-                    </li>
-                    <li class="profile__dropdown-item">
-                        <a href="javascript:void(0)" class="profile__dropdown-link" onclick="toggleUserSettings()">
-                            <img src="./assets/images/settings-icon.svg" alt="settings icon">
-                            <span>User settings</span>
-                        </a>
-                    </li>
-                    <li class="profile__dropdown-item">
-                        <a href="./login.html" class="profile__dropdown-link">
-                            <img src="./assets/images/logout-icon.svg" alt="logout icon">
-                            <span>Logout</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </header>
-
-        <main class="scipher">
-            <div class="scipher-container">
-                <!-- ==== Boards ==== -->
-                <div class="scipher__boards">
-                    <div class="scipher__boards-header">
-                        <!-- Score  -->
-                        <div class="boards__score">
-                            <div class="boards__score-header">
-                                <button type="button" onclick="toggleScoreDropdown()">
-                                    <img src="./assets/images/bars.svg" alt="bars icon">
-                                </button>
-                                <div class="d-flex align-items-center">
-                                    <div class="boards__score-score">
-                                        <span>0</span>
-                                    </div>
-                                </div>
+                    <!-- ── LEFT: Team 1 (Red) ── -->
+                    <div class="boards__score">
+                        <div class="boards__score-header team-red" id="team1-header" style="border-radius:8px; padding:10px 16px; cursor:pointer;" onclick="joinTeam(1)">
+                            <div class="join-team-block" id="team1-join">
+                                <span class="team-label">Team 1</span>
+                                <button class="join-btn">Join Team</button>
                             </div>
-                            <div class="boards__score-dropdown" id="score-dropdown">
-                                <div class="card">
-                                    <div class="card-header pink">
-                                        <div class="card-header-heading">
-                                            <img src="./assets/images/list-icon.svg" alt="match icon">
-                                            <h6>Mirzobedilx team</h6>
-                                        </div>
-                                        <button type="button" class="btn btn-sm">
-                                            <img src="./assets/images/edit-icon.svg" alt="edit icon">
-                                        </button>
-                                    </div>
-
-                                    <div class="card-body">
-                                        <div class="boards__score-buttons">
-                                            <button type="button" class="btn btn-pink">
-                                                JOIN
-                                            </button>
-                                        </div>
-
-                                        <ul class="boards__list">
-                                            <!-- Item 1 -->
-                                            <li class="boards__list-item">
-                                                <div class="boards__list-star">
-                                                    <img src="./assets/images/star-icon.svg" alt="star icon">
-                                                </div>
-                                                <div class="boards__list-cup">
-                                                    <img src="./assets/images/cup_icon.svg" alt="">
-                                                </div>
-                                                <div class="boards__list-avatar">
-                                                    <img src="./assets/images/card-avatar.png" alt="">
-                                                </div>
-                                                <p class="fw-medium color-cyan">
-                                                    Club_lommy
-                                                </p>
-                                                <div class="boards__list-scores">
-                                                    <img src="./assets/images/trophy.svg" alt="cup icon">
-                                                    <span>512</span>
-                                                </div>
-                                            </li>
-
-                                            <!-- Item 2 -->
-                                            <li class="boards__list-item">
-                                                <div class="boards__list-star">
-                                                </div>
-                                                <div class="boards__list-cup">
-                                                    <img src="./assets/images/cup_icon.svg" alt="">
-                                                </div>
-                                                <div class="boards__list-avatar">
-                                                    <img src="./assets/images/card-avatar.png" alt="">
-                                                </div>
-                                                <p class="fw-medium color-cyan">
-                                                    Mirzo bedil
-                                                </p>
-                                                <div class="boards__list-scores">
-                                                    <img src="./assets/images/trophy.svg" alt="cup icon">
-                                                    <span>229</span>
-                                                </div>
-                                            </li>
-
-                                            <!-- Item 3 -->
-                                            <li class="boards__list-item">
-                                                <div class="boards__list-star">
-                                                </div>
-                                                <div class="boards__list-cup">
-                                                </div>
-                                                <div class="boards__list-avatar">
-                                                    <img src="./assets/images/card-avatar.png" alt="">
-                                                </div>
-                                                <p class="fw-medium color-cyan">
-                                                    Hayyat_agency
-                                                </p>
-                                                <div class="boards__list-scores">
-                                                    <img src="./assets/images/trophy.svg" alt="cup icon">
-                                                    <span>44</span>
-                                                </div>
-                                            </li>
-
-                                            <!-- Item 4 -->
-                                            <li class="boards__list-item">
-                                                <div class="boards__list-star">
-                                                </div>
-                                                <div class="boards__list-cup">
-                                                    <img src="./assets/images/cup_icon.svg" alt="">
-                                                </div>
-                                                <div class="boards__list-avatar">
-                                                    <img src="./assets/images/card-avatar.png" alt="">
-                                                </div>
-                                                <p class="fw-medium color-cyan">
-                                                    James_bond_007
-                                                </p>
-                                                <div class="boards__list-scores">
-                                                    <img src="./assets/images/trophy.svg" alt="cup icon">
-                                                    <span>143</span>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
+                            <div id="team1-joined" style="display:none; width:100%;">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.7);">Team 1</span>
+                                    <span id="team1-score" style="font-size:1.4rem; font-weight:700; color:#fff;">0</span>
                                 </div>
+                                <div id="team1-members" style="font-size:0.8rem; color:rgba(255,255,255,0.6); margin-top:4px;"></div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Clue -->
-                        <div class="boards__clue">
-                            <div class="boards__start">
-
-                                <div class="boards__start-start player">
-                                    <svg>
-                                        <defs>
-                                            <linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <!-- ── CENTER: Timer ── -->
+                    <div class="boards__clue">
+                        <div class="boards__start">
+                            <div class="boards__start-start player">
+                                <svg>
+                                    <defs>
+                                        <linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%">
                                             <stop offset="0%" stop-color="#FF6699"/>
                                             <stop offset="32.8%" stop-color="#FFDB4A"/>
                                             <stop offset="68.02%" stop-color="#67FF50"/>
                                             <stop offset="100%" stop-color="#2ADAFF"/>
-                                            </linearGradient>
-                                        </defs>
-
-                                        <circle class="taboo-start-bg" cx="31" cy="31" r="28" />
-
-                                        <circle class="taboo-start-color-bg" cx="31" cy="31" r="28" stroke="url(#linear)"/>
-                                        
-                                      </svg>
-                                      <span id="player-timer-value">60</span>
-                                </div>
-
+                                        </linearGradient>
+                                    </defs>
+                                    <circle class="taboo-start-bg" cx="31" cy="31" r="28" />
+                                    <circle class="taboo-start-color-bg" cx="31" cy="31" r="28" stroke="url(#linear)"/>
+                                </svg>
+                                <span id="player-timer-value">--</span>
                             </div>
-                        </div>
-
-                        <div class="boards__turn">
-                            <div class="turn__tabs">
-                                <span class="turn__tabs-btn clipt active">
-                                    Team 0’s turn
-                                </span>
-                            </div>
-
-                            <div class="boards__turn-header">
-                                <div class="d-flex align-items-center">
-                                    <div class="boards__score-score">
-                                        <span>0</span>
-                                    </div>
-                                    <div class="boards__score-time">
-                                        <span class="d-sm-none">mirzobedilx is describing</span>
-                                    </div>
-                                </div>
-                                <button type="button" onclick="toggleTurnDropdown()">
-                                    <img src="./assets/images/bars-right.svg" alt="bars icon">
-                                </button>
-                            </div>
-
-                            <div class="boards__score-dropdown" id="turn-dropdown">
-                                <div class="card">
-                                    <div class="card-header orange">
-                                        <div class="card-header-heading">
-                                            <img src="./assets/images/list-icon.svg" alt="match icon">
-                                            <h6>Mirzobedilx team</h6>
-                                        </div>
-                                        <button type="button" class="btn btn-sm">
-                                            <img src="./assets/images/edit-icon.svg" alt="edit icon">
-                                        </button>
-                                    </div>
-
-                                    <div class="card-body">
-                                        <div class="boards__score-buttons">
-                                            <button type="button" class="btn btn-orange">
-                                                JOIN
-                                            </button>
-                                        </div>
-
-                                        <ul class="boards__list">
-                                            <!-- Item 1 -->
-                                            <li class="boards__list-item">
-                                                <div class="boards__list-star">
-                                                    <img src="./assets/images/star-icon.svg" alt="star icon">
-                                                </div>
-                                                <div class="boards__list-cup">
-                                                    <img src="./assets/images/cup_icon.svg" alt="">
-                                                </div>
-                                                <div class="boards__list-avatar">
-                                                    <img src="./assets/images/card-avatar.png" alt="">
-                                                </div>
-                                                <p class="fw-medium color-cyan">
-                                                    Club_lommy
-                                                </p>
-                                                <div class="boards__list-scores">
-                                                    <img src="./assets/images/trophy.svg" alt="cup icon">
-                                                    <span>512</span>
-                                                </div>
-                                            </li>
-
-                                            <!-- Item 2 -->
-                                            <li class="boards__list-item">
-                                                <div class="boards__list-star">
-                                                </div>
-                                                <div class="boards__list-cup">
-                                                    <img src="./assets/images/cup_icon.svg" alt="">
-                                                </div>
-                                                <div class="boards__list-avatar">
-                                                    <img src="./assets/images/card-avatar.png" alt="">
-                                                </div>
-                                                <p class="fw-medium color-cyan">
-                                                    Mirzo bedil
-                                                </p>
-                                                <div class="boards__list-scores">
-                                                    <img src="./assets/images/trophy.svg" alt="cup icon">
-                                                    <span>229</span>
-                                                </div>
-                                            </li>
-
-                                            <!-- Item 3 -->
-                                            <li class="boards__list-item">
-                                                <div class="boards__list-star">
-                                                </div>
-                                                <div class="boards__list-cup">
-                                                </div>
-                                                <div class="boards__list-avatar">
-                                                    <img src="./assets/images/card-avatar.png" alt="">
-                                                </div>
-                                                <p class="fw-medium color-cyan">
-                                                    Hayyat_agency
-                                                </p>
-                                                <div class="boards__list-scores">
-                                                    <img src="./assets/images/trophy.svg" alt="cup icon">
-                                                    <span>44</span>
-                                                </div>
-                                            </li>
-
-                                            <!-- Item 4 -->
-                                            <li class="boards__list-item">
-                                                <div class="boards__list-star">
-                                                </div>
-                                                <div class="boards__list-cup">
-                                                    <img src="./assets/images/cup_icon.svg" alt="">
-                                                </div>
-                                                <div class="boards__list-avatar">
-                                                    <img src="./assets/images/card-avatar.png" alt="">
-                                                </div>
-                                                <p class="fw-medium color-cyan">
-                                                    James_bond_007
-                                                </p>
-                                                <div class="boards__list-scores">
-                                                    <img src="./assets/images/trophy.svg" alt="cup icon">
-                                                    <span>143</span>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
 
-                    <!-- Scipher Cards -->
-                    <div class="taboo__content">
-                        <div class="enter-world">
-                            <p>Enter word</p>
+                    <!-- ── RIGHT: Team 2 (Blue) ── -->
+                    <div class="boards__turn">
+                        <div class="turn__tabs">
+                            <span class="turn__tabs-btn clipt active" id="turn-label">Waiting for players...</span>
                         </div>
-                        <!-- ==== Search ====  -->
-                        <div class="taboo__search">
-                            <form action="#" class="taboo__search-form">
-                                <div class="taboo__search-form-row">
-                                    <input type="search" class="form-row-input" placeholder="Enter a word and press enter or click submit">
-                                    <button type="button" class="btn btn-start">Submit</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- ==== Contributions Card ==== -->
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-header-heading">
-                                    <img src="./assets/images/checked-icon.svg" alt="List icon">
-                                    <h6>Contributions</h6>
-                                </div>
+                        <div class="boards__turn-header team-blue" id="team2-header" style="border-radius:8px; padding:10px 16px; cursor:pointer;" onclick="joinTeam(2)">
+                            <div class="join-team-block" id="team2-join">
+                                <span class="team-label">Team 2</span>
+                                <button class="join-btn">Join Team</button>
                             </div>
-                            <div class="card-body">
-                                <ul class="card__list">
-                                    <!-- Item 1 -->
-                                    <li class="card__list-item with-buttons">
-                                        <div class="card__info">
-                                            <div class="card__info-icon">
-                                                <img src="./assets/images/cup_icon.svg" alt="Cup icon">
-                                            </div>
-                                            <div class="card__info-avatar">
-                                                <img src="./assets/images/card-avatar.png" alt="">
-                                            </div>
-                                            <div class="card__info-text">
-                                                <p class="color-cyan">James_bond_007</p>
-                                            </div>
-                                        </div>
-                                        <div class="card__list-buttons">
-                                            <button type="button" class="btn card-btn-orange mr-4">
-                                                Solutions
-                                            </button>
-                                            <button type="button" class="btn card-btn-orange dark">
-                                                ETE...
-                                            </button>
-                                        </div>
-                                    </li>
-
-                                    <!-- Item 2 -->
-                                    <li class="card__list-item with-buttons">
-                                        <div class="card__info">
-                                            <div class="card__info-icon">
-                                                <img src="./assets/images/cup_icon.svg" alt="Cup icon">
-                                            </div>
-                                            <div class="card__info-avatar">
-                                                <img src="./assets/images/card-avatar.png" alt="">
-                                            </div>
-                                            <div class="card__info-text">
-                                                <p class="color-cyan">Max_bro_94</p>
-                                            </div>
-                                        </div>
-                                        <div class="card__list-buttons">
-                                            <button type="button" class="btn card-btn-orange mr-4">
-                                                Yemen
-                                            </button>
-                                            <button type="button" class="btn card-btn-orange">
-                                                Glowing
-                                            </button>
-                                        </div>
-                                    </li>
-
-                                </ul>
+                            <div id="team2-joined" style="display:none; width:100%;">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.7);">Team 2</span>
+                                    <span id="team2-score" style="font-size:1.4rem; font-weight:700; color:#fff;">0</span>
+                                </div>
+                                <div id="team2-members" style="font-size:0.8rem; color:rgba(255,255,255,0.6); margin-top:4px;"></div>
                             </div>
                         </div>
-
                     </div>
+
                 </div>
 
-                <!-- ==== Log Cards ==== -->
-                <div class="scipher__log log__taboo" id="scipher__log">
-                    <div class="log__header">
-                        <div class="log__header-buttons">
-                            <button type="button" onclick="chatLog()"  class="log__header-btn log-btn">
-                                <img src="./assets/images/door-icon.svg" alt="icon">
-                            </button>
-                            <div class="log__header-btns">
-                                <button type="button" onclick="toggleChangeName()" class="log__header-btn">
-                                    <img src="./assets/images/t-icon.svg" alt="icon">
-                                </button>
-                                <button type="button" onclick="toggleRoomSettings()" class="log__header-btn">
-                                    <img src="./assets/images/settings-icon.svg" alt="icon">
-                                </button>
-                                <button type="button" onclick="toggleResetGame()" class="log__header-btn">
-                                    <img src="./assets/images/spinn-icon.svg" alt="icon">
-                                </button>
-                                <button type="button" onclick="toggleRoomLobby()" class="log__header-btn">
-                                    <img src="./assets/images/user-group-icon.svg" alt="icon">
-                                </button>
+                <!-- ── Game Area ── -->
+                <div class="taboo__content">
+
+                    <!-- Share room URL -->
+                    <div id="room-share-banner">
+                        <p>🔗 Share this link with friends to join:</p>
+                        <span class="room-url" id="room-url-display"></span>
+                        <button class="copy-btn" onclick="copyRoomUrl()">Copy Link</button>
+                    </div>
+
+                    <!-- Waiting message (before both teams have players) -->
+                    <div id="waiting-msg">
+                        👥 Join a team above, then share the link. Game starts when you click <strong>Start Turn</strong>.
+                    </div>
+
+                    <!-- Word display (hidden until turn starts) -->
+                    <div id="current-word-display" style="display:none;">
+                        <p style="color:rgba(255,255,255,0.5); font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">Describe this word — don't say the taboo words!</p>
+                        <h2 id="target-word"></h2>
+                        <div id="taboo-words-list"></div>
+                    </div>
+
+                    <!-- Score display -->
+                    <div id="score-display" style="display:none;">
+                        <div class="score-box score-red">
+                            <div class="score-team-label">Team 1</div>
+                            <div class="score-val" id="score-team1">0</div>
+                        </div>
+                        <div class="score-box score-blue">
+                            <div class="score-team-label">Team 2</div>
+                            <div class="score-val" id="score-team2">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Game controls -->
+                    <div id="game-controls" style="display:none;">
+                        <button class="ctrl-btn" id="start-turn-btn" onclick="startTurn()">▶ Start Turn — Team 1</button>
+                        <button class="ctrl-btn" id="skip-btn" onclick="skipWord()">⏭ Skip Word</button>
+                        <button class="ctrl-btn" id="end-turn-btn" onclick="endTurn(false)">⏹ End Turn</button>
+                    </div>
+
+                    <!-- Search / guess input -->
+                    <div class="taboo__search" id="guess-area" style="display:none;">
+                        <div class="taboo__search-form">
+                            <div class="taboo__search-form-row">
+                                <input type="search" id="guess-input" class="form-row-input" placeholder="Type your guess and press Submit or Enter">
+                                <button type="button" class="btn btn-start" onclick="checkGuess()">Submit</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ==== Game Log Card ==== -->
-                    <div class="card game-log-card" id="log-card">
+                    <!-- Contributions / game log -->
+                    <div class="card" id="contributions-card" style="display:none;">
                         <div class="card-header">
                             <div class="card-header-heading">
-                                <img src="./assets/images/clock.svg" alt="Clock">
-                                <h6 class="text-uppercase">Game log</h6>
+                                <img src="./assets/images/checked-icon.svg" alt="List icon">
+                                <h6>Contributions</h6>
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="taboo__gamelog custom-scrollbar">
-                                <div class="taboo__gamelog-content">
-                                    <p class="taboo__gamelog-text">
-                                        <strong>TABOO Pack - Hard</strong> (3,263 words) - 12% correct, 20 pts
-                                    </p>
-                                    <p class="taboo__gamelog-text"><strong>TABOO Pack - Insane</strong> (2,139 words) - 3% correct, 30 pts</p>
-                                    <p class="taboo__gamelog-text">
-                                        Welcome to <strong>TABOO: Standard mode (Normal)</strong>. Each turn there will be one person on your team who is the Describer, they will be shown 7 words that they will describe to you. You will have 60 seconds to correctly guess your words, you receive half points for incorrect spelling. More difficult words are worth more points. Bonus words will appear if you complete most of your list.
-                                    </p>
-                                    <p class="taboo__gamelog-text">
-                                        <strong>TABOO Pack - Hard</strong> (3,263 words) - 12% correct, 20 pts
-                                    </p>
-                                    <p class="taboo__gamelog-text"><strong>TABOO Pack - Insane</strong> (2,139 words) - 3% correct, 30 pts</p>
-                                    <p class="taboo__gamelog-text">
-                                        Welcome to <strong>TABOO: Standard mode (Normal)</strong>. Each turn there will be one person on your team who is the Describer, they will be shown 7 words that they will describe to you. You will have 60 seconds to correctly guess your words, you receive half points for incorrect spelling. More difficult words are worth more points. Bonus words will appear if you complete most of your list.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>                        
-                    </div>
-
-                    <!-- ==== Chat Card ==== -->
-                    <div class="card chat" id="chat-card">
-                        <div class="card-header chat__header">
-                            <div class="card-header-heading">
-                                <img src="./assets/images/chat-icon.svg" alt="Chat icon">
-                                <h6 class="text-uppercase">Chats</h6>
-                            </div>
-                            <div class="chat__tabs">
-                                <button type="button" class="chat__tabs-btn team-1" data-id="tab-content-team-1">Team1</button>
-                                <button type="button" class="chat__tabs-btn team-2 active" data-id="tab-content-team-2">Team2</button>
-                            </div>
-                        </div>
-
-                        <div class="card-body chat__body">
-                            <!-- Content Team 1 -->
-                            <div class="chat__tab-content" data-id="tab-content-team-1">
-                                <p>Team 1 content</p>
-                            </div>
-
-                            <!-- Content Team 2 -->
-                            <div class="chat__tab-content show" data-id="tab-content-team-2">
-                                <div>
-                                    <!-- Row 1 -->
-                                    <div class="chat__tab-row">
-                                        <div class="chat__tabs-text">
-                                            <div class="chat__tab-user">
-                                                <div class="chat__tab-avatar">
-                                                    <img src="./assets/images/game-avatar-1.png" alt="">
-                                                </div>
-                                                <img src="./assets/images/cup_icon.svg" alt="" class="chat__tab-icon">
-                                                <p class="fw-bold color-orange">User</p>
-                                            </div>
-                                            <p class="chat__tab-message">Message sfesfse  sfsfsf sfse fsef sef se fseef sef sef sef sef sefs</p>
-                                        </div>
-                                        <div class="chat__tab-time">
-                                            <span class="color-gray">5m ago</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Row 1 -->
-                                    <div class="chat__tab-row">
-                                        <div class="chat__tabs-text">
-                                            <div class="chat__tab-user">
-                                                <div class="chat__tab-avatar">
-                                                    <img src="./assets/images/game-avatar-2.png" alt="">
-                                                </div>
-                                                <img src="./assets/images/cup_icon.svg" alt="" class="chat__tab-icon">
-                                                <p class="fw-bold color-orange">User</p>
-                                            </div>
-                                            <p class="chat__tab-message">Message</p>
-                                        </div>
-                                        <div class="chat__tab-time">
-                                            <span class="color-gray">5m ago</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <form action="#" class="chat__form">
-                                    <div class="chat__form-row">
-                                        <input type="text" placeholder="Post message..." class="chat__form-input">
-                                        <button type="submit" class="chat__form-btn">
-                                            <img src="./assets/images/send-icon.svg" alt="Send icon">
-                                        </button>
-                                    </div>
-                                </form>
-
-                            </div>
+                            <ul class="card__list" id="contributions-list"></ul>
                         </div>
                     </div>
+
                 </div>
             </div>
-        </main>
-    </div>
 
-    <!-- ====== Suggest A Word Modal ====== -->
-    <div class="backdrop" id="change-team-name">
-        <div class="modal-content">
-            <div class="card change-name-card">
-                <div class="card-header">
-                    <div class="card-header-heading">
-                        <img src="./assets/images/t-icon.svg" alt="Edit Icon">
-                        <h6>SUGGEST A WORD</h6>
-                    </div>
-                    <button type="button" class="btn btn-sm" onclick="toggleChangeName()">
-                        <img src="./assets/images/close-icon.svg" alt="close icon">
-                    </button>
-                </div>
-                <div class="card-body">
-                    <form action="#" class="scipher__form">
-                        <label for="name">Suggest word</label>
-                        <div class="scipher__form-row">
-                            <input type="text" name="name" id="name">
-                            <button type="submit" class="btn btn-dark ">
-                                Submit
+            <!-- ── Log / Chat panel ── -->
+            <div class="scipher__log log__taboo" id="scipher__log">
+                <div class="log__header">
+                    <div class="log__header-buttons">
+                        <button type="button" onclick="chatLog()" class="log__header-btn log-btn">
+                            <img src="./assets/images/door-icon.svg" alt="icon">
+                        </button>
+                        <div class="log__header-btns">
+                            <button type="button" onclick="toggleChangeName()" class="log__header-btn">
+                                <img src="./assets/images/t-icon.svg" alt="icon">
+                            </button>
+                            <button type="button" onclick="toggleRoomSettings()" class="log__header-btn">
+                                <img src="./assets/images/settings-icon.svg" alt="icon">
+                            </button>
+                            <button type="button" onclick="toggleResetGame()" class="log__header-btn">
+                                <img src="./assets/images/spinn-icon.svg" alt="icon">
+                            </button>
+                            <button type="button" onclick="toggleRoomLobby()" class="log__header-btn">
+                                <img src="./assets/images/user-group-icon.svg" alt="icon">
                             </button>
                         </div>
-                        <p class="form-row-text">Suggest a word to be added to the existing 9,747.</p>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ====== Room Settings Modal ====== -->
-    <div class="backdrop" id="room-settings">
-        <div class="modal-content">
-            <div class="card room-settings-card">
-                <div class="card-header">
-                    <div class="card-header-heading">
-                        <img src="./assets/images/settings-icon.svg" alt="Edit Icon">
-                        <h6>Room settings</h6>
                     </div>
-                    <button type="button" class="btn btn-sm" onclick="toggleRoomSettings()">
-                        <img src="./assets/images/close-icon.svg" alt="close icon">
-                    </button>
                 </div>
-                <div class="card-body">
-                    <form action="#" class="scipher__form">
-                        <div class="login__form-row">
-                            <label for="room-grid-size" class="mb-8">Words per turn</label>
-                            <select name="room-grid-size" id="room-grid-size">
-                                <option value="7">7</option>
-                                <option value="5">5</option>
-                            </select>
+
+                <!-- Game Log Card -->
+                <div class="card game-log-card" id="log-card">
+                    <div class="card-header">
+                        <div class="card-header-heading">
+                            <img src="./assets/images/clock.svg" alt="Clock">
+                            <h6 class="text-uppercase">Game log</h6>
                         </div>
-
-                        <div class="login__form-row pt-8">
-                            <label for="cards-per-team" class="mb-8">Seconds per team</label>
-                            <select name="cards-per-team" id="cards-per-team">
-                                <option value="60">60</option>
-                                <option value="80">80</option>
-                            </select>
-                        </div>
-
-                        <div class="login__form-row pt-8">
-                            <label for="black-cards" class="mb-8">Game Mode</label>
-                            <select name="black-cards" id="black-cards">
-                                <option value="standard">Standard - Normal</option>
-                            </select>
-                        </div>
-
-                        <div class="pt-8 pb-16">
-                            <p class="checkbox-row-title">Rules / Settings</p>
-
-                            <!-- Row 1 -->
-                            <div class="checkbox-row">
-                                <input type="checkbox" id="allow-numbers" class="checkbox-input">
-                                <label for="allow-numbers" class="checkbox-label">
-                                    Disable chatroom
-                                </label>
-                                <span class="checkbox-checkmark"></span>
-                            </div>
-
-                            <!-- Row 2 -->
-                            <div class="checkbox-row">
-                                <input type="checkbox" id="higher-numbers" class="checkbox-input">
-                                <label for="higher-numbers" class="checkbox-label">
-                                    Randomize teams after each game
-                                </label>
-                                <span class="checkbox-checkmark"></span>
-                            </div>
-                            
-                        </div>
-
-                        <div class="scipher__form-row justify-content-end">
-                            <button type="submit" class="btn btn-dark ">
-                                Save room settings for next match
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ====== Room Lobby Modal ====== -->
-    <div class="backdrop" id="room-lobby">
-        <div class="modal-content">
-            <div class="card room-lobby-card">
-                <div class="card-header">
-                    <div class="card-header-heading">
-                        <img src="./assets/images/people.svg" alt="Icon">
-                        <h6>Room lobby</h6>
                     </div>
-                    <button type="button" class="btn btn-sm" onclick="toggleRoomLobby()">
-                        <img src="./assets/images/close-icon.svg" alt="close icon">
-                    </button>
-                </div>
-                <div class="card-body">
-                    <ul class="card__list">
-                        <!-- Item 1 -->
-                        <li class="card__list-item justify-content-between p-8">
-                            <div class="card__info">
-                                <div class="card__info-icon">
-                                    <img src="./assets/images/cup_icon.svg" alt="Cup icon">
-                                </div>
-                                <div class="card__info-avatar">
-                                    <img src="./assets/images/card-avatar.png" alt="">
-                                </div>
-                                <div class="card__info-text">
-                                    <p class="color-cyan">Name</p>
-                                    <p class="text-italic ml-8">(spymaster)</p>
-                                    <img src="./assets/images/cup-yellow.svg" alt="Cup icon" class="mr-3 ml-8">
-                                    <p class="color-yellow fw-medium">0</p>
-                                </div>
+                    <div class="card-body">
+                        <div class="taboo__gamelog custom-scrollbar">
+                            <div class="taboo__gamelog-content" id="game-log-content">
+                                <p class="taboo__gamelog-text">Welcome! Join a team and share the link with friends to start playing.</p>
                             </div>
-
-                            <div class="d-flex align-items-center room-lobby-btns">
-                                <button type="button" class="btn btn-primary btn-xs mr-8 text-uppercase">Make host</button>
-                                <button type="button" class="btn btn-secondary btn-xs text-uppercase">Ban</button>
-                            </div>
-                        </li>
-
-                        <!-- Item 2 -->
-                        <li class="card__list-item justify-content-between p-8">
-                            <div class="card__info">
-                                <div class="card__info-icon">
-                                    <img src="./assets/images/cup_icon.svg" alt="Cup icon">
-                                </div>
-                                <div class="card__info-avatar">
-                                    <img src="./assets/images/card-avatar.png" alt="">
-                                </div>
-                                <div class="card__info-text">
-                                    <p class="color-cyan">Name</p>
-                                    <p class="text-italic ml-8">(spymaster)</p>
-                                    <img src="./assets/images/cup-yellow.svg" alt="Cup icon" class="mr-3 ml-8">
-                                    <p class="color-yellow fw-medium">0</p>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center room-lobby-btns">
-                                <button type="button" class="btn btn-primary btn-xs mr-8 text-uppercase">Make host</button>
-                                <button type="button" class="btn btn-secondary btn-xs text-uppercase">Ban</button>
-                            </div>
-                        </li>
-
-                        <!-- Item 3 -->
-                        <li class="card__list-item justify-content-between p-8">
-                            <div class="card__info">
-                                <div class="card__info-icon">
-                                    <img src="./assets/images/cup_icon.svg" alt="Cup icon">
-                                </div>
-                                <div class="card__info-avatar">
-                                    <img src="./assets/images/card-avatar.png" alt="">
-                                </div>
-                                <div class="card__info-text">
-                                    <p class="color-cyan">Name</p>
-                                    <p class="text-italic ml-8">(spymaster)</p>
-                                    <img src="./assets/images/cup-yellow.svg" alt="Cup icon" class="mr-3 ml-8">
-                                    <p class="color-yellow fw-medium">0</p>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center room-lobby-btns">
-                                <button type="button" class="btn btn-primary btn-xs mr-8 text-uppercase">Make host</button>
-                                <button type="button" class="btn btn-secondary btn-xs text-uppercase">Ban</button>
-                            </div>
-                        </li>
-
-                        <!-- Item 4 -->
-                        <li class="card__list-item justify-content-between p-8">
-                            <div class="card__info">
-                                <div class="card__info-icon">
-                                    <img src="./assets/images/cup_icon.svg" alt="Cup icon">
-                                </div>
-                                <div class="card__info-avatar">
-                                    <img src="./assets/images/card-avatar.png" alt="">
-                                </div>
-                                <div class="card__info-text">
-                                    <p class="color-cyan">Name</p>
-                                    <p class="text-italic ml-8">(spymaster)</p>
-                                    <img src="./assets/images/cup-yellow.svg" alt="Cup icon" class="mr-3 ml-8">
-                                    <p class="color-yellow fw-medium">0</p>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center room-lobby-btns">
-                                <button type="button" class="btn btn-primary btn-xs mr-8 text-uppercase">Make host</button>
-                                <button type="button" class="btn btn-secondary btn-xs text-uppercase">Ban</button>
-                            </div>
-                        </li>
-
-                        <!-- Item 5 -->
-                        <li class="card__list-item justify-content-between p-8">
-                            <div class="card__info">
-                                <div class="card__info-icon">
-                                    <img src="./assets/images/cup_icon.svg" alt="Cup icon">
-                                </div>
-                                <div class="card__info-avatar">
-                                    <img src="./assets/images/card-avatar.png" alt="">
-                                </div>
-                                <div class="card__info-text">
-                                    <p class="color-cyan">Name</p>
-                                    <p class="text-italic ml-8">(spymaster)</p>
-                                    <img src="./assets/images/cup-yellow.svg" alt="Cup icon" class="mr-3 ml-8">
-                                    <p class="color-yellow fw-medium">0</p>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center room-lobby-btns">
-                                <button type="button" class="btn btn-primary btn-xs mr-8 text-uppercase">Make host</button>
-                                <button type="button" class="btn btn-secondary btn-xs text-uppercase">Ban</button>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ====== Reset Game Modal ====== -->
-    <div class="backdrop" id="reset-game-modal">
-        <div class="modal-content">
-            <div class="card change-name-card">
-                <div class="card-header">
-                    <div class="card-header-heading">
-                        <img src="./assets/images/reset-icon.svg" alt="Reset Icon">
-                        <h6>Restart game</h6>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-sm" onclick="toggleResetGame()">
-                        <img src="./assets/images/close-icon.svg" alt="close icon">
-                    </button>
                 </div>
-                <div class="card-body">
-                    <form action="#" class="scipher__form">
-                        <div class="scipher__form-texts">
-                            <p class="fw-medium">Do you confirm restarting the game?</p>
-                            <p class="color-yellow text-uppercase fw-medium mt-12">Warning! This will reset the
-                                currently running game!</p>
-                        </div>
-                        <div class="scipher__form-row justify-content-center">
-                            <button type="button" class="scipher__form-cancel">Cancel</button>
-                            <button type="button" class="btn btn-dark ">
-                                Confirm
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- ====== Uset Settings Modal ====== -->
-    <div class="backdrop" id="user-settings">
-        <div class="modal-content">
-            <div class="card user-settings-card">
-                <div class="card-header">
-                    <div class="card-header-heading">
-                        <img src="./assets/images/settings-icon.svg" alt="Gear icon">
-                        <h6 class="card-title">User Settings</h6>
+                <!-- Chat Card -->
+                <div class="card chat" id="chat-card">
+                    <div class="card-header chat__header">
+                        <div class="card-header-heading">
+                            <img src="./assets/images/chat-icon.svg" alt="Chat icon">
+                            <h6 class="text-uppercase">Chats</h6>
+                        </div>
+                        <div class="chat__tabs">
+                            <button type="button" class="chat__tabs-btn team-1" data-id="tab-content-team-1">Team 1</button>
+                            <button type="button" class="chat__tabs-btn team-2 active" data-id="tab-content-team-2">Team 2</button>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-sm" onclick="toggleUserSettings()">
-                        <img src="./assets/images/close-icon.svg" alt="close icon">
-                    </button>
+                    <div class="card-body chat__body">
+                        <div class="chat__tab-content" data-id="tab-content-team-1"><p>Team 1 chat</p></div>
+                        <div class="chat__tab-content show" data-id="tab-content-team-2">
+                            <form action="#" class="chat__form">
+                                <div class="chat__form-row">
+                                    <input type="text" placeholder="Post message..." class="chat__form-input">
+                                    <button type="submit" class="chat__form-btn">
+                                        <img src="./assets/images/send-icon.svg" alt="Send icon">
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form action="#" class="form">
-                        <!-- Row 1 -->
-                        <div class="form-row">
-                            <label for="user-name">Change Username</label>
-                            <input type="text" id="user-name" class="form-row-input">
-                            <p class="form-row-text">Username can only be changed once a week.</p>
-                        </div>
-    
-                        <!-- Row 2 -->
-                        <div class="form-row">
-                            <label for="win-rate">Hide win rate on profile page</label>
-                            <select name="" id="win-rate">
-                                <option value="no">No</option>
-                            </select>
-                            <p class="form-row-text">This covers anything related to your total wins/losses.</p>
-                        </div>
-    
-                        <!-- Row 3 -->
-                        <div class="form-row">
-                            <label for="detailed-statistics">Hide detailed statistics on profile page</label>
-                            <select name="" id="detailed-statistics">
-                                <option value="no">No</option>
-                            </select>
-                            <div class="form-row-text">This does not cover win/losses, this covers detailed numbers such as total clues given, average clue size, etc.</div>
-                        </div>
-    
-                        <!-- Row 4 -->
-                        <div class="form-row">
-                            <label for="trophy-number">Hide trophy number next to username</label>
-                            <select name="" id="trophy-number">
-                                <option value="no">No</option>
-                            </select>
-                        </div>
-    
-                        <!-- Row 5 -->
-                        <div class="form-row">
-                            <label for="allowing-friends">Opt out of allowing friends to compare their stats with yours</label>
-                            <select name="" id="allowing-friends">
-                                <option value="no">No</option>
-                                <option value="allow">Allow</option>
-                            </select>
-                        </div>
-    
-                        <div class="form-button">
-                            <button type="submit" class="btn form-button-btn">Save user settings</button>
-                        </div>
-                    </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ====== Suggest A Word Modal ====== -->
+<div class="backdrop" id="change-team-name">
+    <div class="modal-content">
+        <div class="card change-name-card">
+            <div class="card-header">
+                <div class="card-header-heading">
+                    <img src="./assets/images/t-icon.svg" alt="Edit Icon">
+                    <h6>SUGGEST A WORD</h6>
+                </div>
+                <button type="button" class="btn btn-sm" onclick="toggleChangeName()">
+                    <img src="./assets/images/close-icon.svg" alt="close icon">
+                </button>
+            </div>
+            <div class="card-body">
+                <form action="#" class="scipher__form">
+                    <label for="suggest-word">Suggest word</label>
+                    <div class="scipher__form-row">
+                        <input type="text" name="suggest-word" id="suggest-word">
+                        <button type="submit" class="btn btn-dark">Submit</button>
+                    </div>
+                    <p class="form-row-text">Suggest a word to be added to the existing pack.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== Room Settings Modal ====== -->
+<div class="backdrop" id="room-settings">
+    <div class="modal-content">
+        <div class="card room-settings-card">
+            <div class="card-header">
+                <div class="card-header-heading">
+                    <img src="./assets/images/settings-icon.svg" alt="Edit Icon">
+                    <h6>Room settings</h6>
+                </div>
+                <button type="button" class="btn btn-sm" onclick="toggleRoomSettings()">
+                    <img src="./assets/images/close-icon.svg" alt="close icon">
+                </button>
+            </div>
+            <div class="card-body">
+                <form action="#" class="scipher__form">
+                    <div class="login__form-row">
+                        <label class="mb-8">Words per turn</label>
+                        <select name="room-grid-size" id="room-grid-size">
+                            <option value="6">6</option>
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="14">14</option>
+                        </select>
+                    </div>
+                    <div class="login__form-row pt-8">
+                        <label class="mb-8">Seconds per turn</label>
+                        <select name="cards-per-team" id="cards-per-team">
+                            <option value="40">40</option>
+                            <option value="60">60</option>
+                            <option value="75">75</option>
+                            <option value="85">85</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="scipher__form-row justify-content-end" style="margin-top:16px;">
+                        <button type="submit" class="btn btn-dark">Save settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== Room Lobby Modal ====== -->
+<div class="backdrop" id="room-lobby">
+    <div class="modal-content">
+        <div class="card room-lobby-card">
+            <div class="card-header">
+                <div class="card-header-heading">
+                    <img src="./assets/images/people.svg" alt="Icon">
+                    <h6>Room lobby</h6>
+                </div>
+                <button type="button" class="btn btn-sm" onclick="toggleRoomLobby()">
+                    <img src="./assets/images/close-icon.svg" alt="close icon">
+                </button>
+            </div>
+            <div class="card-body">
+                <ul class="card__list" id="lobby-list">
+                    <li style="padding:16px; color:rgba(255,255,255,0.4); font-size:0.85rem;">No players yet.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== Reset Game Modal ====== -->
+<div class="backdrop" id="reset-game-modal">
+    <div class="modal-content">
+        <div class="card change-name-card">
+            <div class="card-header">
+                <div class="card-header-heading">
+                    <img src="./assets/images/reset-icon.svg" alt="Reset Icon">
+                    <h6>Restart game</h6>
+                </div>
+                <button type="button" class="btn btn-sm" onclick="toggleResetGame()">
+                    <img src="./assets/images/close-icon.svg" alt="close icon">
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="scipher__form-texts">
+                    <p class="fw-medium">Do you confirm restarting the game?</p>
+                    <p class="color-yellow text-uppercase fw-medium mt-12">Warning! This will reset the currently running game!</p>
+                </div>
+                <div class="scipher__form-row justify-content-center" style="margin-top:16px;">
+                    <button type="button" class="scipher__form-cancel" onclick="toggleResetGame()">Cancel</button>
+                    <button type="button" class="btn btn-dark" onclick="resetGame()">Confirm</button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.3.3/echarts.min.js" integrity="sha512-2L0h0GhoIHQEjti/1KwfjcbyaTHy+hPPhE1o5wTCmviYcPO/TD9oZvUxFQtWvBkCSTIpt+fjsx1CCx6ekb51gw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="./js/scipher.js"></script>
-    <script src="./js/taboo-game.js"></script>
+</div>
+
+<!-- ====== User Settings Modal ====== -->
+<div class="backdrop" id="user-settings">
+    <div class="modal-content">
+        <div class="card user-settings-card">
+            <div class="card-header">
+                <div class="card-header-heading">
+                    <img src="./assets/images/settings-icon.svg" alt="Gear icon">
+                    <h6 class="card-title">User Settings</h6>
+                </div>
+                <button type="button" class="btn btn-sm" onclick="toggleUserSettings()">
+                    <img src="./assets/images/close-icon.svg" alt="close icon">
+                </button>
+            </div>
+            <div class="card-body">
+                <form action="#" class="form">
+                    <div class="form-row">
+                        <label for="user-name">Change Username</label>
+                        <input type="text" id="user-name" class="form-row-input">
+                        <p class="form-row-text">Username can only be changed once a week.</p>
+                    </div>
+                    <div class="form-row">
+                        <label for="win-rate">Hide win rate on profile page</label>
+                        <select id="win-rate"><option value="no">No</option></select>
+                    </div>
+                    <div class="form-button">
+                        <button type="submit" class="btn form-button-btn">Save user settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.3.3/echarts.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="./js/scipher.js"></script>
+<script src="./js/auth.js"></script>
+
+<script>
+// ── Load user ────────────────────────────────────────────────
+var currentUser = SipherAPI ? SipherAPI.getUser() : JSON.parse(localStorage.getItem('scipher_user') || 'null');
+var username = currentUser ? currentUser.username : 'Player';
+
+// ── Load game settings from create-taboo ─────────────────────
+var settings = JSON.parse(localStorage.getItem('taboo_settings') || '{}');
+var originalTime = parseInt(settings.timePerTurn) || 60;
+var wordsPerTurn = parseInt(settings.wordsPerTurn) || 7;
+var roomName = settings.roomName || 'Taboo Room';
+
+// ── Set timer display to configured time (not counting yet) ──
+document.getElementById('player-timer-value').textContent = originalTime;
+
+// ── Room URL display ─────────────────────────────────────────
+var roomUrl = window.location.href;
+document.getElementById('room-url-display').textContent = roomUrl;
+
+function copyRoomUrl() {
+    navigator.clipboard.writeText(roomUrl).then(function() {
+        var btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy Link'; }, 2000);
+    });
+}
+
+// ── Team state ────────────────────────────────────────────────
+var teams = { 1: [], 2: [] };
+var myTeam = null;
+var gameState = {
+    started: false,
+    currentTeam: 1,
+    scores: { 1: 0, 2: 0 },
+    timeLeft: originalTime,
+    timerInterval: null,
+    words: [],
+    currentWordIndex: 0,
+    wordsRevealedThisTurn: 0
+};
+
+// ── Join team ─────────────────────────────────────────────────
+function joinTeam(teamNum) {
+    if (myTeam !== null) {
+        addLog('You are already on Team ' + myTeam + '.');
+        return;
+    }
+
+    myTeam = teamNum;
+    teams[teamNum].push(username);
+
+    // Update UI for this team
+    document.getElementById('team' + teamNum + '-join').style.display = 'none';
+    document.getElementById('team' + teamNum + '-joined').style.display = 'block';
+    document.getElementById('team' + teamNum + '-members').textContent = teams[teamNum].join(', ');
+    document.getElementById('team' + teamNum + '-header').style.cursor = 'default';
+
+    // Show game controls and game area
+    document.getElementById('waiting-msg').style.display = 'none';
+    document.getElementById('game-controls').style.display = 'flex';
+    document.getElementById('score-display').style.display = 'flex';
+    document.getElementById('contributions-card').style.display = 'block';
+
+    // Update turn label
+    document.getElementById('turn-label').textContent = 'Team 1\'s turn';
+    document.getElementById('start-turn-btn').textContent = '▶ Start Turn — Team 1';
+
+    addLog('✅ ' + username + ' joined Team ' + teamNum + '!');
+    updateLobby();
+}
+
+// ── Update lobby modal ────────────────────────────────────────
+function updateLobby() {
+    var list = document.getElementById('lobby-list');
+    list.innerHTML = '';
+    [1, 2].forEach(function(t) {
+        teams[t].forEach(function(name) {
+            var li = document.createElement('li');
+            li.className = 'card__list-item justify-content-between p-8';
+            li.innerHTML = '<div class="card__info"><div class="card__info-text"><p class="color-cyan">' + name + '</p><p class="text-italic ml-8">(Team ' + t + ')</p></div></div>';
+            list.appendChild(li);
+        });
+    });
+    if (teams[1].length === 0 && teams[2].length === 0) {
+        list.innerHTML = '<li style="padding:16px; color:rgba(255,255,255,0.4); font-size:0.85rem;">No players yet.</li>';
+    }
+}
+
+// ── Load word pack ────────────────────────────────────────────
+fetch('./assets/data/taboo-words.json')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        var difficulty = settings.difficulty || 'easy';
+        var pool = [];
+        if (settings.useOfficialPack !== false) {
+            pool = pool.concat(data[difficulty] || data['easy']);
+        }
+        if (settings.customWords && settings.customWords.length > 0) {
+            settings.customWords.forEach(function(w) {
+                pool.push({ word: w, taboo: [] });
+            });
+        }
+        if (pool.length === 0) pool = data['easy'];
+        gameState.words = shuffle(pool);
+        addLog('📦 Loaded ' + gameState.words.length + ' words (' + (settings.difficulty || 'easy') + ' difficulty).');
+    })
+    .catch(function() {
+        addLog('⚠️ Could not load word pack. Check assets/data/taboo-words.json exists.');
+    });
+
+// ── Start Turn ────────────────────────────────────────────────
+function startTurn() {
+    if (!myTeam) { addLog('Join a team first!'); return; }
+
+    gameState.started = true;
+    gameState.timeLeft = originalTime;
+    gameState.wordsRevealedThisTurn = 0;
+    gameState.currentWordIndex = Math.floor(Math.random() * gameState.words.length);
+
+    document.getElementById('start-turn-btn').style.display = 'none';
+    document.getElementById('skip-btn').style.display = 'inline-block';
+    document.getElementById('end-turn-btn').style.display = 'inline-block';
+    document.getElementById('current-word-display').style.display = 'block';
+    document.getElementById('guess-area').style.display = 'block';
+
+    showWord();
+    startTimer();
+
+    document.getElementById('turn-label').textContent = 'Team ' + gameState.currentTeam + '\'s Turn';
+    addLog('🎮 Team ' + gameState.currentTeam + '\'s turn! Describe ' + wordsPerTurn + ' words in ' + originalTime + 's.');
+}
+
+// ── Show word card ────────────────────────────────────────────
+function showWord() {
+    if (gameState.currentWordIndex >= gameState.words.length) gameState.currentWordIndex = 0;
+    var entry = gameState.words[gameState.currentWordIndex];
+
+    document.getElementById('target-word').textContent = entry.word;
+    var tabooList = document.getElementById('taboo-words-list');
+    tabooList.innerHTML = entry.taboo.length
+        ? entry.taboo.map(function(t) { return '<span class="taboo-word-tag">' + t + '</span>'; }).join('')
+        : '<span style="color:rgba(255,255,255,0.3); font-size:0.8rem;">No taboo words for this entry</span>';
+
+    var input = document.getElementById('guess-input');
+    if (input) { input.value = ''; input.focus(); }
+}
+
+// ── Check guess ───────────────────────────────────────────────
+function checkGuess() {
+    if (!gameState.started) return;
+    var input = document.getElementById('guess-input');
+    var guess = input.value.trim().toLowerCase();
+    var target = gameState.words[gameState.currentWordIndex].word.toLowerCase();
+
+    if (!guess) return;
+
+    if (guess === target || similarity(guess, target) >= 0.8) {
+        gameState.scores[gameState.currentTeam]++;
+        gameState.wordsRevealedThisTurn++;
+        updateScores();
+        addContribution(gameState.words[gameState.currentWordIndex].word, true);
+        addLog('✅ <strong>' + gameState.words[gameState.currentWordIndex].word + '</strong> — Correct! Team ' + gameState.currentTeam + ' +1');
+
+        if (gameState.wordsRevealedThisTurn >= wordsPerTurn) {
+            endTurn(true);
+            return;
+        }
+        gameState.currentWordIndex++;
+        showWord();
+    } else {
+        addLog('❌ "' + guess + '" — not quite, keep trying!');
+        input.value = '';
+        input.focus();
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && gameState.started) checkGuess();
+});
+
+// ── Skip word ─────────────────────────────────────────────────
+function skipWord() {
+    if (!gameState.started) return;
+    addLog('⏭ Skipped: <strong>' + gameState.words[gameState.currentWordIndex].word + '</strong>');
+    gameState.currentWordIndex++;
+    showWord();
+}
+
+// ── Timer ─────────────────────────────────────────────────────
+function startTimer() {
+    clearInterval(gameState.timerInterval);
+    updateTimerDisplay();
+    gameState.timerInterval = setInterval(function() {
+        gameState.timeLeft--;
+        updateTimerDisplay();
+        if (gameState.timeLeft <= 0) {
+            clearInterval(gameState.timerInterval);
+            endTurn(false);
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    var el = document.getElementById('player-timer-value');
+    if (el) {
+        el.textContent = gameState.timeLeft;
+        el.style.color = gameState.timeLeft <= 10 ? '#ff4444' : '#fff';
+    }
+    var circle = document.querySelector('.taboo-start-color-bg');
+    if (circle) {
+        var circ = 2 * Math.PI * 28;
+        var progress = gameState.timeLeft / originalTime;
+        circle.style.strokeDasharray = circ;
+        circle.style.strokeDashoffset = circ * (1 - progress);
+    }
+}
+
+// ── End Turn ──────────────────────────────────────────────────
+function endTurn(completed) {
+    clearInterval(gameState.timerInterval);
+    gameState.started = false;
+
+    document.getElementById('start-turn-btn').style.display = 'inline-block';
+    document.getElementById('skip-btn').style.display = 'none';
+    document.getElementById('end-turn-btn').style.display = 'none';
+    document.getElementById('current-word-display').style.display = 'none';
+    document.getElementById('guess-area').style.display = 'none';
+
+    var reason = completed ? 'all words done' : 'time ran out';
+    addLog('🏁 Turn ended (' + reason + '). Team ' + gameState.currentTeam + ' revealed ' + gameState.wordsRevealedThisTurn + ' word(s).');
+
+    // Switch team
+    gameState.currentTeam = gameState.currentTeam === 1 ? 2 : 1;
+    document.getElementById('start-turn-btn').textContent = '▶ Start Turn — Team ' + gameState.currentTeam;
+    document.getElementById('turn-label').textContent = 'Team ' + gameState.currentTeam + '\'s turn';
+
+    // Reset timer display
+    gameState.timeLeft = originalTime;
+    updateTimerDisplay();
+
+    gameState.words = shuffle(gameState.words);
+}
+
+// ── Reset game ────────────────────────────────────────────────
+function resetGame() {
+    clearInterval(gameState.timerInterval);
+    gameState.scores = { 1: 0, 2: 0 };
+    gameState.currentTeam = 1;
+    gameState.timeLeft = originalTime;
+    gameState.started = false;
+    gameState.wordsRevealedThisTurn = 0;
+    updateScores();
+    updateTimerDisplay();
+    document.getElementById('start-turn-btn').style.display = 'inline-block';
+    document.getElementById('skip-btn').style.display = 'none';
+    document.getElementById('end-turn-btn').style.display = 'none';
+    document.getElementById('current-word-display').style.display = 'none';
+    document.getElementById('guess-area').style.display = 'none';
+    document.getElementById('contributions-list').innerHTML = '';
+    document.getElementById('turn-label').textContent = 'Team 1\'s turn';
+    document.getElementById('start-turn-btn').textContent = '▶ Start Turn — Team 1';
+    addLog('🔄 Game reset!');
+    toggleResetGame();
+}
+
+// ── Scores ────────────────────────────────────────────────────
+function updateScores() {
+    document.getElementById('score-team1').textContent = gameState.scores[1];
+    document.getElementById('score-team2').textContent = gameState.scores[2];
+    document.getElementById('team1-score').textContent = gameState.scores[1];
+    document.getElementById('team2-score').textContent = gameState.scores[2];
+}
+
+// ── Contributions ─────────────────────────────────────────────
+function addContribution(word, correct) {
+    var list = document.getElementById('contributions-list');
+    var li = document.createElement('li');
+    li.className = 'card__list-item with-buttons';
+    li.innerHTML = '<div class="card__info"><div class="card__info-text"><p class="color-cyan">' + username + '</p></div></div>'
+        + '<div class="card__list-buttons"><button class="btn card-btn-orange" style="background:rgba(0,200,100,0.3);color:#4dff91;">✅ ' + word + '</button></div>';
+    list.insertBefore(li, list.firstChild);
+}
+
+// ── Game log ──────────────────────────────────────────────────
+function addLog(msg) {
+    var el = document.getElementById('game-log-content');
+    if (!el) return;
+    var p = document.createElement('p');
+    p.className = 'taboo__gamelog-text';
+    p.innerHTML = msg;
+    p.style.borderLeft = '2px solid rgba(0,229,255,0.3)';
+    p.style.paddingLeft = '8px';
+    p.style.marginBottom = '6px';
+    el.insertBefore(p, el.firstChild);
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+}
+
+function similarity(a, b) {
+    if (a === b) return 1;
+    var longer = a.length > b.length ? a : b;
+    var shorter = a.length > b.length ? b : a;
+    var dist = levenshtein(longer, shorter);
+    return (longer.length - dist) / longer.length;
+}
+
+function levenshtein(a, b) {
+    var dp = [];
+    for (var i = 0; i <= b.length; i++) {
+        dp[i] = [i];
+        for (var j = 1; j <= a.length; j++) {
+            dp[i][j] = i === 0 ? j : Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+(b[i-1]===a[j-1]?0:1));
+        }
+    }
+    return dp[b.length][a.length];
+}
+
+// ── Logout ────────────────────────────────────────────────────
+function logout() {
+    localStorage.removeItem('scipher_token');
+    localStorage.removeItem('scipher_user');
+    window.location.href = './login.html';
+}
+</script>
+
 </body>
 </html>
