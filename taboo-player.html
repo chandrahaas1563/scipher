@@ -165,7 +165,10 @@
 
                     <!-- ── LEFT: Team 1 (Red) ── -->
                     <div class="boards__score">
-                        <div class="boards__score-header team-red" id="team1-header" style="border-radius:8px; padding:12px 16px; min-height:55px; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="turn__tabs" style="margin-bottom:0;">
+                            <span class="turn__tabs-btn clipt active" id="join-team1-tab" onclick="joinTeam(1)" style="cursor:pointer; background:rgba(180,0,30,0.7); border:1px solid rgba(255,23,68,0.8); display:block; text-align:center;">Join Team 1</span>
+                        </div>
+                        <div class="boards__score-header team-red" id="team1-header" style="border-radius:0 0 8px 8px; padding:12px 16px; min-height:55px; display:flex; flex-direction:column; justify-content:center;">
                             <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
                                 <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.8); font-weight:700;">Team 1</span>
                                 <span id="team1-score" style="font-size:1.2rem; font-weight:700; color:#fff;">0</span>
@@ -197,12 +200,11 @@
 
                     <!-- ── RIGHT: Team 2 (Blue) ── -->
                     <div class="boards__turn">
-                        <div class="turn__tabs" style="display:flex; gap:4px;">
-                            <span class="turn__tabs-btn clipt" id="join-team1-tab" onclick="joinTeam(1)" style="cursor:pointer; background:rgba(255,23,68,0.3); border:1px solid rgba(255,23,68,0.6);">Join Team 1</span>
-                            <span class="turn__tabs-btn clipt" id="join-team2-tab" onclick="joinTeam(2)" style="cursor:pointer; background:rgba(21,101,192,0.3); border:1px solid rgba(21,101,192,0.6);">Join Team 2</span>
-                            <span class="turn__tabs-btn clipt active" id="turn-label" style="display:none;"></span>
+                        <div class="turn__tabs" style="margin-bottom:0;">
+                            <span class="turn__tabs-btn clipt active" id="join-team2-tab" onclick="joinTeam(2)" style="cursor:pointer; background:rgba(10,60,140,0.7); border:1px solid rgba(21,101,192,0.8); display:block; text-align:center;">Join Team 2</span>
+                            <span class="turn__tabs-btn clipt active" id="turn-label" style="display:none; text-align:center;"></span>
                         </div>
-                        <div class="boards__turn-header team-blue" id="team2-header" style="border-radius:8px; padding:12px 16px; min-height:55px; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="boards__turn-header team-blue" id="team2-header" style="border-radius:0 0 8px 8px; padding:12px 16px; min-height:55px; display:flex; flex-direction:column; justify-content:center;">
                             <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
                                 <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.8); font-weight:700;">Team 2</span>
                                 <span id="team2-score" style="font-size:1.2rem; font-weight:700; color:#fff;">0</span>
@@ -533,9 +535,15 @@ function joinTeam(teamNum) {
     myTeam = teamNum;
     teams[teamNum].push(username);
 
-    // Hide both join tabs, show turn label
-    document.getElementById('join-team1-tab').style.display = 'none';
-    document.getElementById('join-team2-tab').style.display = 'none';
+    // Hide this team's join tab
+    document.getElementById('join-team' + teamNum + '-tab').style.display = 'none';
+
+    // Disable other team's join tab
+    var other = 3 - teamNum;
+    var otherTab = document.getElementById('join-team' + other + '-tab');
+    if (otherTab) { otherTab.onclick = null; otherTab.style.opacity = '0.4'; otherTab.style.cursor = 'not-allowed'; }
+
+    // Show turn label on team2 side
     var turnLabel = document.getElementById('turn-label');
     turnLabel.style.display = '';
     turnLabel.textContent = "Team 1's Turn";
