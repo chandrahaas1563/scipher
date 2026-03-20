@@ -506,6 +506,10 @@ var originalTime = parseInt(settings.timePerTurn) || 60;
 var wordsPerTurn = parseInt(settings.wordsPerTurn) || 7;
 var roomName = settings.roomName || 'Taboo Room';
 
+// isHost = true only for the person who created the room
+// When create-taboo.html saves settings, it also saves the creator's username
+var isHost = settings.createdBy === username;
+
 // ── Hide entire timer until game starts ──────────────────
 document.querySelector('.boards__start').style.visibility = 'hidden';
 
@@ -543,18 +547,29 @@ function joinTeam(teamNum) {
     var otherTab = document.getElementById('join-team' + other + '-tab');
     if (otherTab) { otherTab.onclick = null; otherTab.style.opacity = '0.4'; otherTab.style.cursor = 'not-allowed'; }
 
-    // Show turn label on team2 side
-    var turnLabel = document.getElementById('turn-label');
-    turnLabel.style.display = '';
-    turnLabel.textContent = "Team 1's Turn";
+    // Turn label stays hidden until game starts
 
     // Update member name in score header
     var members = document.getElementById('team' + teamNum + '-members');
     if (members) members.textContent = username;
 
-    // Show game controls
+    // Show start button only to host, waiting msg to guests
+    if (isHost) {
+        document.getElementById('start-game-area').style.display = 'block';
+        var startBtn = document.getElementById('start-game-btn');
+        startBtn.disabled = false;
+        startBtn.style.background = 'linear-gradient(135deg, #00c853, #00e676)';
+        startBtn.style.border = '1px solid rgba(0,230,118,0.6)';
+        startBtn.style.color = '#000';
+        startBtn.style.cursor = 'pointer';
+        document.getElementById('start-game-hint').style.display = 'none';
+    } else {
+        document.getElementById('nonhost-wait-msg').style.display = 'block';
+    }
+
+    // Show game area elements
     document.getElementById('waiting-msg').style.display = 'none';
-    document.getElementById('game-controls').style.display = 'flex';
+    document.getElementById('game-controls').style.display = 'none'; // hide old controls — using start-game-btn instead
     document.getElementById('contributions-card').style.display = 'block';
     document.getElementById('start-turn-btn').textContent = '▶ Start Turn — Team 1';
 
@@ -610,6 +625,8 @@ function startTurn() {
     gameState.wordsRevealedThisTurn = 0;
     gameState.currentWordIndex = Math.floor(Math.random() * gameState.words.length);
 
+    document.getElementById('start-game-area').style.display = 'none';
+    document.getElementById('game-controls').style.display = 'flex';
     document.getElementById('start-turn-btn').style.display = 'none';
     document.getElementById('skip-btn').style.display = 'inline-block';
     document.getElementById('end-turn-btn').style.display = 'inline-block';
@@ -715,7 +732,19 @@ function endTurn(completed) {
     clearInterval(gameState.timerInterval);
     gameState.started = false;
 
-    document.getElementById('start-turn-btn').style.display = 'inline-block';
+    // Show start button only to the player whose turn is next
+    var myTeamNum = myTeam; // the team this player joined
+    if (myTeamNum === gameState.currentTeam) {
+        document.getElementById('start-game-area').style.display = 'block';
+        document.getElementById('start-game-btn').textContent = '▶ START YOUR TURN — Team ' + gameState.currentTeam;
+        document.getElementById('nonhost-wait-msg').style.display = 'none';
+    } else {
+        document.getElementById('start-game-area').style.display = 'none';
+        document.getElementById('nonhost-wait-msg').style.display = 'block';
+        document.getElementById('nonhost-wait-msg').textContent = '⏳ Waiting for Team ' + gameState.currentTeam + ' to start their turn...';
+    }
+    document.getElementById('game-controls').style.display = 'none';
+    document.getElementById('start-turn-btn').style.display = 'none';
     document.getElementById('skip-btn').style.display = 'none';
     document.getElementById('end-turn-btn').style.display = 'none';
     document.getElementById('current-word-display').style.display = 'none';
@@ -746,7 +775,19 @@ function resetGame() {
     gameState.wordsRevealedThisTurn = 0;
     updateScores();
     updateTimerDisplay();
-    document.getElementById('start-turn-btn').style.display = 'inline-block';
+    // Show start button only to the player whose turn is next
+    var myTeamNum = myTeam; // the team this player joined
+    if (myTeamNum === gameState.currentTeam) {
+        document.getElementById('start-game-area').style.display = 'block';
+        document.getElementById('start-game-btn').textContent = '▶ START YOUR TURN — Team ' + gameState.currentTeam;
+        document.getElementById('nonhost-wait-msg').style.display = 'none';
+    } else {
+        document.getElementById('start-game-area').style.display = 'none';
+        document.getElementById('nonhost-wait-msg').style.display = 'block';
+        document.getElementById('nonhost-wait-msg').textContent = '⏳ Waiting for Team ' + gameState.currentTeam + ' to start their turn...';
+    }
+    document.getElementById('game-controls').style.display = 'none';
+    document.getElementById('start-turn-btn').style.display = 'none';
     document.getElementById('skip-btn').style.display = 'none';
     document.getElementById('end-turn-btn').style.display = 'none';
     document.getElementById('current-word-display').style.display = 'none';
