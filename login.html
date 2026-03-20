@@ -10,30 +10,28 @@
 </head>
 <body>
 
-<!-- ✅ If already logged in, skip to main page -->
+<script src="./js/api.js"></script>
+
+<!-- If already logged in, skip to main page -->
 <script>
-    (function() {
-        if (localStorage.getItem('scipher_user')) {
-            window.location.replace('./index.html');
-        }
-    })();
+    if (SipherAPI.isLoggedIn()) {
+        window.location.replace('./index.html');
+    }
 </script>
 
 <main class="main main-bg">
-    <!-- Lights and Background Images -->
     <div class="main-bg__lights">
         <div class="main-bg__light main-bg__light-1"></div>
         <div class="main-bg__light main-bg__light-2"></div>
         <div class="main-bg__light main-bg__light-3"></div>
         <div class="main-bg__light main-bg__light-4"></div>
     </div>
-
     <div class="dots-top"></div>
     <div class="dots-bottom">
         <img src="./assets/images/bg-dots-bottom.png" alt="">
     </div>
 
-    <!-- ====== Logo ====== -->
+    <!-- Logo -->
     <div class="center__logo-container">
         <h6>Welcome to</h6>
         <div class="center__logo-image">
@@ -41,47 +39,58 @@
         </div>
     </div>
 
-    <!-- ====== Login Card ====== -->
+    <!-- Login / Register Card -->
     <div class="auth-wrapper">
         <div class="card auth-card">
-            <div class="card-header">
-                <div class="card-header-heading">
-                    <img src="./assets/images/profile-icon.svg" alt="user icon">
-                    <h6 class="card-title">Sign In</h6>
-                </div>
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="showTab('login')">Sign In</button>
+                <button class="auth-tab" id="tab-register" onclick="showTab('register')">Create Account</button>
             </div>
-            <div class="card-body">
-                <!-- Error message -->
-                <p id="login-error" style="color:#ff4d4d; font-size:0.85rem; margin-bottom:10px; display:none;">
-                    Please enter a username and password.
-                </p>
 
+            <!-- ── LOGIN FORM ── -->
+            <div id="form-login" class="card-body">
+                <p id="login-error" class="auth-error" style="display:none;"></p>
                 <div class="form-row">
-                    <label for="login-username">Username</label>
-                    <input type="text" id="login-username" class="form-row-input" placeholder="Enter your username" autocomplete="username">
+                    <label for="login-username">Username or Email</label>
+                    <input type="text" id="login-username" class="form-row-input" placeholder="Enter username or email" autocomplete="username">
                 </div>
-
                 <div class="form-row">
                     <label for="login-password">Password</label>
-                    <input type="password" id="login-password" class="form-row-input" placeholder="Enter your password" autocomplete="current-password">
+                    <input type="password" id="login-password" class="form-row-input" placeholder="Enter password" autocomplete="current-password">
                 </div>
-
-                <div class="form-button" style="margin-top: 20px;">
+                <div class="form-button" style="margin-top:20px;">
                     <button type="button" class="btn form-button-btn" id="login-btn" onclick="handleLogin()">
                         Sign In
                     </button>
                 </div>
-
-                <div style="text-align:center; margin-top: 16px;">
-                    <a href="./create-account.html" style="color: var(--color-cyan, #00e5ff); font-size: 0.9rem; text-decoration: none;">
-                        Don't have an account? Create one
-                    </a>
-                </div>
-
-                <div style="text-align:center; margin-top: 10px;">
-                    <a href="./guest-room.html" style="color: rgba(255,255,255,0.5); font-size: 0.85rem; text-decoration: none;">
+                <div style="text-align:center; margin-top:14px;">
+                    <a href="./guest-room.html" style="color:rgba(255,255,255,0.45); font-size:0.85rem; text-decoration:none;">
                         Continue as Guest
                     </a>
+                </div>
+            </div>
+
+            <!-- ── REGISTER FORM ── -->
+            <div id="form-register" class="card-body" style="display:none;">
+                <p id="register-error" class="auth-error" style="display:none;"></p>
+                <p id="register-success" class="auth-success" style="display:none;"></p>
+                <div class="form-row">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" class="form-row-input" placeholder="Choose a username" autocomplete="username">
+                </div>
+                <div class="form-row">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" class="form-row-input" placeholder="Enter your email" autocomplete="email">
+                </div>
+                <div class="form-row">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" class="form-row-input" placeholder="Min 6 characters" autocomplete="new-password">
+                </div>
+                <div class="form-button" style="margin-top:20px;">
+                    <button type="button" class="btn form-button-btn" id="register-btn" onclick="handleRegister()">
+                        Create Account
+                    </button>
                 </div>
             </div>
         </div>
@@ -94,54 +103,142 @@
         justify-content: center;
         align-items: center;
         padding: 20px;
-        margin-top: 20px;
+        margin-top: 16px;
     }
-
     .auth-card {
         width: 100%;
         max-width: 420px;
     }
-
-    .auth-card .card-body {
-        padding: 24px;
+    .auth-tabs {
+        display: flex;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-
-    .auth-card .form-row {
-        margin-bottom: 16px;
+    .auth-tab {
+        flex: 1;
+        padding: 14px;
+        background: transparent;
+        border: none;
+        color: rgba(255,255,255,0.45);
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
     }
+    .auth-tab.active {
+        color: #fff;
+        border-bottom: 2px solid var(--color-cyan, #00e5ff);
+    }
+    .auth-error {
+        color: #ff4d4d;
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        background: rgba(255,77,77,0.1);
+        border-radius: 6px;
+    }
+    .auth-success {
+        color: #4dff91;
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        background: rgba(77,255,145,0.1);
+        border-radius: 6px;
+    }
+    .form-row { margin-bottom: 16px; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>
 
-<!-- ✅ LOGIN LOGIC -->
 <script>
-    // Allow pressing Enter to submit
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
+    function showTab(tab) {
+        document.getElementById('form-login').style.display = tab === 'login' ? '' : 'none';
+        document.getElementById('form-register').style.display = tab === 'register' ? '' : 'none';
+        document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+        document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    }
+
+    // Enter key submits active form
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        const loginVisible = document.getElementById('form-login').style.display !== 'none';
+        loginVisible ? handleLogin() : handleRegister();
     });
 
-    function handleLogin() {
-        var username = document.getElementById('login-username').value.trim();
-        var password = document.getElementById('login-password').value.trim();
-        var errorEl = document.getElementById('login-error');
+    async function handleLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const errorEl = document.getElementById('login-error');
+        const btn = document.getElementById('login-btn');
 
-        // Basic validation — both fields required
+        errorEl.style.display = 'none';
         if (!username || !password) {
+            errorEl.textContent = 'Please enter your username and password.';
             errorEl.style.display = 'block';
-            errorEl.textContent = 'Please enter a username and password.';
             return;
         }
 
-        // Hide error
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+
+        try {
+            const data = await SipherAPI.login(username, password);
+
+            if (data.error) {
+                errorEl.textContent = data.error;
+                errorEl.style.display = 'block';
+            } else {
+                SipherAPI.saveSession(data.token, data.user);
+                window.location.href = './index.html';
+            }
+        } catch (err) {
+            errorEl.textContent = 'Could not connect to server. Please try again.';
+            errorEl.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+        }
+    }
+
+    async function handleRegister() {
+        const username = document.getElementById('reg-username').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        const errorEl = document.getElementById('register-error');
+        const successEl = document.getElementById('register-success');
+        const btn = document.getElementById('register-btn');
+
         errorEl.style.display = 'none';
+        successEl.style.display = 'none';
 
-        // Save user session to localStorage
-        localStorage.setItem('scipher_user', JSON.stringify({
-            username: username
-        }));
+        if (!username || !email || !password) {
+            errorEl.textContent = 'All fields are required.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        if (password.length < 6) {
+            errorEl.textContent = 'Password must be at least 6 characters.';
+            errorEl.style.display = 'block';
+            return;
+        }
 
-        // Redirect to main page
-        window.location.href = './index.html';
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+
+        try {
+            const data = await SipherAPI.register(username, email, password);
+
+            if (data.error) {
+                errorEl.textContent = data.error;
+                errorEl.style.display = 'block';
+            } else {
+                SipherAPI.saveSession(data.token, data.user);
+                window.location.href = './index.html';
+            }
+        } catch (err) {
+            errorEl.textContent = 'Could not connect to server. Please try again.';
+            errorEl.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+        }
     }
 </script>
 
