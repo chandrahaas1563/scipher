@@ -176,7 +176,7 @@
                         <div class="create-taboo__selects-row">
                             <div class="form-row">
                                 <label for="word-pack-select">Select word pack(s) <span style="color:#ff4d4d;">*</span></label>
-                                <select id="word-pack-select" onchange="onPackSelect()">
+                                <select id="word-pack-select" name="word-pack-select" onchange="onPackSelect()">
                                     <option value="">-- Choose a word pack --</option>
                                     <option value="official">Official Scipher TABOO Pack (9750 words)</option>
                                     <option value="custom">Add your own words</option>
@@ -275,6 +275,19 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="./js/create-custom.js"></script>
 <script src="./js/auth.js"></script>
+
+<script>
+    // Initialize select2 on the word pack dropdown to match site styling
+    $(document).ready(function() {
+        $('#word-pack-select').select2({
+            minimumResultsForSearch: Infinity
+        });
+        // Re-trigger our handler when select2 changes value
+        $('#word-pack-select').on('change', function() {
+            onPackSelect();
+        });
+    });
+</script>
 
 <script>
     // ── Word pack dropdown handler ────────────────────────────
