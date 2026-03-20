@@ -177,8 +177,8 @@
                             <div class="form-row">
                                 <label for="word-pack-select">Select word pack(s) <span style="color:#ff4d4d;">*</span></label>
                                 <select id="word-pack-select" name="word-pack-select" onchange="onPackSelect()">
-                                    
-                                    <option value="official">Official Scipher TABOO Pack</option>
+                                    <option value="">-- Choose a word pack --</option>
+                                    <option value="official">Official Scipher TABOO Pack (9750 words)</option>
                                     <option value="custom">Add your own words</option>
                                 </select>
                                 <div id="custom-words-section" style="display:none; margin-top:12px;">
@@ -392,13 +392,15 @@
             customWords = customInput.split(',').map(function(w){ return w.trim(); }).filter(function(w){ return w.length > 0; });
         }
 
+        var currentUser = JSON.parse(localStorage.getItem('scipher_user') || '{}');
         localStorage.setItem('taboo_settings', JSON.stringify({
             roomName: roomName,
             difficulty: document.getElementById('standard-mode-difficulty').value,
             timePerTurn: document.getElementById('time-bank').value,
             wordsPerTurn: document.getElementById('words-per-turn').value,
             useOfficialPack: document.getElementById('word-pack-select').value === 'official',
-            customWords: customWords
+            customWords: customWords,
+            createdBy: currentUser.username || ''
         }));
 
         window.location.href = './taboo-player.html';
