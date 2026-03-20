@@ -165,17 +165,12 @@
 
                     <!-- ── LEFT: Team 1 (Red) ── -->
                     <div class="boards__score">
-                        <div class="boards__score-header team-red" id="team1-header" style="border-radius:8px; padding:12px 16px; cursor:pointer; min-height:70px; display:flex; flex-direction:column; justify-content:center;" onclick="joinTeam(1)">
+                        <div class="boards__score-header team-red" id="team1-header" style="border-radius:8px; padding:12px 16px; min-height:55px; display:flex; flex-direction:column; justify-content:center;">
                             <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
                                 <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.8); font-weight:700;">Team 1</span>
                                 <span id="team1-score" style="font-size:1.2rem; font-weight:700; color:#fff;">0</span>
                             </div>
-                            <div id="team1-join-block" style="text-align:center; margin-top:8px;">
-                                <button class="join-btn" style="background:rgba(255,23,68,0.5); border:1px solid rgba(255,100,100,0.7); color:#fff; padding:5px 18px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.82rem;">Join Team</button>
-                            </div>
-                            <div id="team1-joined-block" style="display:none; margin-top:4px;">
-                                <div id="team1-members" style="font-size:0.78rem; color:rgba(255,255,255,0.75);"></div>
-                            </div>
+                            <div id="team1-members" style="font-size:0.78rem; color:rgba(255,255,255,0.75); margin-top:4px; min-height:16px;"></div>
                         </div>
                     </div>
 
@@ -202,20 +197,17 @@
 
                     <!-- ── RIGHT: Team 2 (Blue) ── -->
                     <div class="boards__turn">
-                        <div class="turn__tabs">
-                            <span class="turn__tabs-btn clipt active" id="turn-label">Join a Team</span>
+                        <div class="turn__tabs" style="display:flex; gap:4px;">
+                            <span class="turn__tabs-btn clipt" id="join-team1-tab" onclick="joinTeam(1)" style="cursor:pointer; background:rgba(255,23,68,0.3); border:1px solid rgba(255,23,68,0.6);">Join Team 1</span>
+                            <span class="turn__tabs-btn clipt" id="join-team2-tab" onclick="joinTeam(2)" style="cursor:pointer; background:rgba(21,101,192,0.3); border:1px solid rgba(21,101,192,0.6);">Join Team 2</span>
+                            <span class="turn__tabs-btn clipt active" id="turn-label" style="display:none;"></span>
                         </div>
-                        <div class="boards__turn-header team-blue" id="team2-header" style="border-radius:8px; padding:12px 16px; cursor:pointer; min-height:70px; display:flex; flex-direction:column; justify-content:center;" onclick="joinTeam(2)">
+                        <div class="boards__turn-header team-blue" id="team2-header" style="border-radius:8px; padding:12px 16px; min-height:55px; display:flex; flex-direction:column; justify-content:center;">
                             <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
                                 <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.8); font-weight:700;">Team 2</span>
                                 <span id="team2-score" style="font-size:1.2rem; font-weight:700; color:#fff;">0</span>
                             </div>
-                            <div id="team2-join-block" style="text-align:center; margin-top:8px;">
-                                <button class="join-btn" style="background:rgba(21,101,192,0.5); border:1px solid rgba(100,150,255,0.7); color:#fff; padding:5px 18px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.82rem;">Join Team</button>
-                            </div>
-                            <div id="team2-joined-block" style="display:none; margin-top:4px;">
-                                <div id="team2-members" style="font-size:0.78rem; color:rgba(255,255,255,0.75);"></div>
-                            </div>
+                            <div id="team2-members" style="font-size:0.78rem; color:rgba(255,255,255,0.75); margin-top:4px; min-height:16px;"></div>
                         </div>
                     </div>
 
@@ -512,19 +504,8 @@ var originalTime = parseInt(settings.timePerTurn) || 60;
 var wordsPerTurn = parseInt(settings.wordsPerTurn) || 7;
 var roomName = settings.roomName || 'Taboo Room';
 
-// ── Timer disabled initially ──────────────────────────────
-document.getElementById('player-timer-value').textContent = '--';
-document.getElementById('player-timer-value').style.color = 'rgba(255,255,255,0.25)';
-// Hide the coloured ring entirely until game starts
-var initCircle = document.querySelector('.taboo-start-color-bg');
-if (initCircle) {
-    initCircle.style.display = 'none';
-}
-// Grey out the bg circle too
-var initBg = document.querySelector('.taboo-start-bg');
-if (initBg) {
-    initBg.style.stroke = 'rgba(255,255,255,0.1)';
-}
+// ── Hide entire timer until game starts ──────────────────
+document.querySelector('.boards__start').style.visibility = 'hidden';
 
 
 
@@ -545,38 +526,28 @@ var gameState = {
 // ── Join team ─────────────────────────────────────────────────
 function joinTeam(teamNum) {
     if (myTeam !== null) {
-        addLog('You are already on Team ' + myTeam + '. You cannot switch teams.');
+        addLog('You are already on Team ' + myTeam + '.');
         return;
     }
 
     myTeam = teamNum;
     teams[teamNum].push(username);
 
-    // Hide join button, show members
-    var joinBlock = document.getElementById('team' + teamNum + '-join-block');
-    var joinedBlock = document.getElementById('team' + teamNum + '-joined-block');
-    if (joinBlock) joinBlock.style.display = 'none';
-    if (joinedBlock) joinedBlock.style.display = 'block';
+    // Hide both join tabs, show turn label
+    document.getElementById('join-team1-tab').style.display = 'none';
+    document.getElementById('join-team2-tab').style.display = 'none';
+    var turnLabel = document.getElementById('turn-label');
+    turnLabel.style.display = '';
+    turnLabel.textContent = "Team 1's Turn";
 
-    // Disable header click
-    var header = document.getElementById('team' + teamNum + '-header');
-    if (header) { header.onclick = null; header.style.cursor = 'default'; }
+    // Update member name in score header
+    var members = document.getElementById('team' + teamNum + '-members');
+    if (members) members.textContent = username;
 
-    // Disable other team header
-    var other = 3 - teamNum;
-    var otherHeader = document.getElementById('team' + other + '-header');
-    if (otherHeader) { otherHeader.onclick = null; otherHeader.style.cursor = 'not-allowed'; otherHeader.style.opacity = '0.6'; }
-
-    // Update member name
-    var headerMembers = document.getElementById('team' + teamNum + '-members');
-    if (headerMembers) headerMembers.textContent = teams[teamNum].join(', ');
-
-    // Show game area
+    // Show game controls
     document.getElementById('waiting-msg').style.display = 'none';
     document.getElementById('game-controls').style.display = 'flex';
     document.getElementById('contributions-card').style.display = 'block';
-
-    document.getElementById('turn-label').textContent = "Team 1's Turn";
     document.getElementById('start-turn-btn').textContent = '▶ Start Turn — Team 1';
 
     addLog('✅ ' + username + ' joined Team ' + teamNum + '!');
@@ -703,12 +674,8 @@ function skipWord() {
 // ── Timer ─────────────────────────────────────────────────────
 function startTimer() {
     clearInterval(gameState.timerInterval);
-    // Re-enable timer visuals
-    var circle = document.querySelector('.taboo-start-color-bg');
-    if (circle) circle.style.display = '';
-    var bg = document.querySelector('.taboo-start-bg');
-    if (bg) bg.style.stroke = '';
-    document.getElementById('player-timer-value').style.color = '#fff';
+    // Show timer when game starts
+    document.querySelector('.boards__start').style.visibility = 'visible';
     updateTimerDisplay();
     gameState.timerInterval = setInterval(function() {
         gameState.timeLeft--;
