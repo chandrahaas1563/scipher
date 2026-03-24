@@ -89,6 +89,12 @@
         #end-turn-btn    { background: rgba(255,50,50,0.4); color: #fff; display: none; }
         .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+        /* ── Member slots ── */
+        .member-slot-bar { transition: background 0.3s, height 0.2s; }
+        .member-slot:hover .member-slot-bar { background: rgba(255,255,255,0.45) !important; }
+        .member-slot.filled .member-slot-bar { background: rgba(255,255,255,0.7) !important; height: 3px !important; }
+        .member-slot.filled:hover .member-slot-name { display: block !important; }
+
         /* ── Waiting state ── */
         #waiting-msg {
             text-align: center;
@@ -221,7 +227,21 @@
                                 <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.8); font-weight:700;">Team 2</span>
                                 <span id="team2-score" style="font-size:1.2rem; font-weight:700; color:#fff;">0</span>
                             </div>
-                            <div id="team2-members" style="font-size:0.78rem; color:rgba(255,255,255,0.75); margin-top:4px; min-height:16px;"></div>
+                            <!-- 3 member slots -->
+                            <div style="margin-top:10px; display:flex; flex-direction:column; gap:5px;">
+                                <div class="member-slot" id="team2-slot-1" onclick="toggleMembers(2)" style="cursor:pointer;">
+                                    <div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px; transition:background 0.2s;"></div>
+                                    <div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div>
+                                </div>
+                                <div class="member-slot" id="team2-slot-2" onclick="toggleMembers(2)" style="cursor:pointer;">
+                                    <div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px; transition:background 0.2s;"></div>
+                                    <div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div>
+                                </div>
+                                <div class="member-slot" id="team2-slot-3" onclick="toggleMembers(2)" style="cursor:pointer;">
+                                    <div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px; transition:background 0.2s;"></div>
+                                    <div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -561,9 +581,11 @@ function joinTeam(teamNum) {
 
     // Turn label stays hidden until game starts
 
-    // Update member name in score header
-    var members = document.getElementById('team' + teamNum + '-members');
-    if (members) members.textContent = username;
+    // Update member slots
+    teams[teamNum].push(username); // ensure added before update (may already be added above)
+    // Deduplicate
+    teams[teamNum] = teams[teamNum].filter(function(v, i, a) { return a.indexOf(v) === i; });
+    updateTeamSlots(teamNum);
 
     // Show start button only to host, waiting msg to guests
     if (isHost) {
@@ -603,6 +625,49 @@ function updateLobby() {
     });
     if (teams[1].length === 0 && teams[2].length === 0) {
         list.innerHTML = '<li style="padding:16px; color:rgba(255,255,255,0.4); font-size:0.85rem;">No players yet.</li>';
+    }
+    // Also update team slots
+    updateTeamSlots(1);
+    updateTeamSlots(2);
+}
+
+// ── Update the 3 slot lines for a team ────────────────────────
+function updateTeamSlots(teamNum) {
+    var members = teams[teamNum];
+    for (var i = 1; i <= 3; i++) {
+        var slot = document.getElementById('team' + teamNum + '-slot-' + i);
+        if (!slot) continue;
+        var bar = slot.querySelector('.member-slot-bar');
+        var name = slot.querySelector('.member-slot-name');
+        var member = members[i - 1];
+        if (member) {
+            slot.classList.add('filled');
+            bar.style.background = teamNum === 1 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)';
+            name.textContent = member;
+        } else {
+            slot.classList.remove('filled');
+            bar.style.background = 'rgba(255,255,255,0.2)';
+            name.style.display = 'none';
+            name.textContent = '';
+        }
+    }
+}
+
+// ── Toggle showing member names on click ──────────────────────
+var membersVisible = { 1: false, 2: false };
+function toggleMembers(teamNum) {
+    membersVisible[teamNum] = !membersVisible[teamNum];
+    var members = teams[teamNum];
+    for (var i = 1; i <= 3; i++) {
+        var slot = document.getElementById('team' + teamNum + '-slot-' + i);
+        if (!slot) continue;
+        var nameEl = slot.querySelector('.member-slot-name');
+        var member = members[i - 1];
+        if (member && membersVisible[teamNum]) {
+            nameEl.style.display = 'block';
+        } else {
+            nameEl.style.display = 'none';
+        }
     }
 }
 
