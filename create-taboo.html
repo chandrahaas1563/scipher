@@ -400,7 +400,8 @@
             wordsPerTurn: document.getElementById('words-per-turn').value,
             useOfficialPack: document.getElementById('word-pack-select').value === 'official',
             customWords: customWords,
-            createdBy: currentUser.username || ''
+            createdBy: currentUser.username || '',
+            roomCode: (roomName + '-' + (currentUser.username || 'host')).replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 12)
         }));
 
         window.location.href = './taboo-player.html';

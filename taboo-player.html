@@ -521,6 +521,7 @@
     </div>
 </div>
 
+<script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.3.3/echarts.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -747,6 +748,15 @@ function checkGuess() {
         updateScores();
         addContribution(gameState.words[gameState.currentWordIndex].word, true);
         addLog('✅ <strong>' + gameState.words[gameState.currentWordIndex].word + '</strong> — Correct! Team ' + gameState.currentTeam + ' +1');
+
+    // Emit score update to server
+    if (socket && socket.connected) {
+        socket.emit('game:wordRevealed', {
+            roomCode: roomCode,
+            word: gameState.words[gameState.currentWordIndex].word,
+            team: 'team' + gameState.currentTeam
+        });
+    }
 
         if (gameState.wordsRevealedThisTurn >= wordsPerTurn) {
             endTurn(true);
