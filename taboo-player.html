@@ -102,6 +102,18 @@
 
 <script src="./js/api.js"></script>
 
+<script>
+    // Auth guard with redirect — if not logged in, go to login then come back here
+    (function() {
+        var user = localStorage.getItem('scipher_user');
+        if (!user) {
+            // Save current URL so login can redirect back
+            var returnUrl = encodeURIComponent(window.location.href);
+            window.location.replace('./login.html?redirect=' + returnUrl);
+        }
+    })();
+</script>
+
 <div class="main-bg">
     <div class="main-bg__lights">
         <div class="main-bg__light main-bg__light-1"></div>
