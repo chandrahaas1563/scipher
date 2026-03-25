@@ -9,111 +9,43 @@
     <link rel="stylesheet" href="./css/scipher.css">
     <title>Taboo Player</title>
     <style>
-        /* ── Team colour overrides ── */
-        .team-red   { background: linear-gradient(135deg, #c0001a, #ff1744) !important; border: 1px solid rgba(255,23,68,0.6) !important; }
-        .team-blue  { background: linear-gradient(135deg, #0d47a1, #1565c0) !important; border: 1px solid rgba(21,101,192,0.6) !important; }
-        .score-red  { background: rgba(255,23,68,0.15) !important; border: 1px solid rgba(255,23,68,0.5) !important; }
-        .score-blue { background: rgba(21,101,192,0.15) !important; border: 1px solid rgba(21,101,192,0.5) !important; }
+        .team-red  { background: linear-gradient(135deg, #c0001a, #ff1744) !important; border: 1px solid rgba(255,23,68,0.6) !important; }
+        .team-blue { background: linear-gradient(135deg, #0d47a1, #1565c0) !important; border: 1px solid rgba(21,101,192,0.6) !important; }
 
-        /* ── Join team buttons ── */
-        .join-team-block {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 12px 0;
-        }
-        .join-team-block .team-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.6);
-        }
-        .join-team-block .join-btn {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: #fff;
-            padding: 6px 22px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        .join-team-block .join-btn:hover { background: rgba(255,255,255,0.25); }
-
-
-
-        /* ── Word card ── */
-        #current-word-display {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 16px;
-        }
+        #current-word-display { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 16px; }
         #target-word { color: #fff; font-size: 2rem; font-weight: 700; margin: 8px 0 16px; }
-        .taboo-word-tag {
-            background: rgba(255,50,50,0.2);
-            color: #ff6b6b;
-            border: 1px solid rgba(255,50,50,0.4);
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 0.8rem;
-            display: inline-block;
-            margin: 3px;
-        }
+        .taboo-word-tag { background: rgba(255,50,50,0.2); color: #ff6b6b; border: 1px solid rgba(255,50,50,0.4); border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; display: inline-block; margin: 3px; }
 
-        /* ── Score boxes ── */
-        #score-display { display: flex; gap: 12px; margin-bottom: 14px; }
-        .score-box { flex: 1; border-radius: 8px; padding: 10px 16px; text-align: center; }
-        .score-box .score-team-label { font-size: 0.7rem; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
-        .score-box .score-val { font-size: 1.6rem; font-weight: 700; }
-        .score-red  .score-val { color: #e74c3c; }
-        .score-blue .score-val { color: #2980b9; }
-
-        /* ── Game controls ── */
         #game-controls { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-        .ctrl-btn {
-            padding: 8px 20px;
-            border-radius: 6px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        #start-turn-btn  { background: #00e5ff; color: #000; }
-        #skip-btn        { background: rgba(255,100,0,0.4); color: #fff; display: none; }
-        #end-turn-btn    { background: rgba(255,50,50,0.4); color: #fff; display: none; }
+        .ctrl-btn { padding: 8px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+        #start-turn-btn { background: #00e5ff; color: #000; }
+        #skip-btn       { background: rgba(255,100,0,0.4); color: #fff; display: none; }
+        #end-turn-btn   { background: rgba(255,50,50,0.4); color: #fff; display: none; }
         .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* ── Member slots ── */
-        .member-slot-bar { transition: background 0.3s, height 0.2s; }
+        .member-slot { cursor: pointer; }
+        .member-slot-bar { transition: background 0.3s; }
         .member-slot:hover .member-slot-bar { background: rgba(255,255,255,0.45) !important; }
-        .member-slot.filled .member-slot-bar { background: rgba(255,255,255,0.7) !important; height: 3px !important; }
+        .member-slot.filled .member-slot-bar { background: rgba(255,255,255,0.85) !important; }
         .member-slot.filled:hover .member-slot-name { display: block !important; }
 
-        /* ── Waiting state ── */
-        #waiting-msg {
-            text-align: center;
-            padding: 30px;
-            color: rgba(255,255,255,0.5);
-            font-size: 0.95rem;
-        }
+        #start-game-area { text-align: center; margin: 16px 0 8px; display: none; }
+        #nonhost-wait-msg { text-align: center; padding: 10px; color: rgba(255,255,255,0.35); font-size: 0.82rem; display: none; }
+
+        #room-share-banner { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.25); border-radius: 10px; padding: 12px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        #room-share-banner p { color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 0; }
+        .room-url { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 5px 12px; color: #00e5ff; font-size: 0.8rem; font-family: monospace; flex: 1; min-width: 200px; }
+        .copy-btn { background: rgba(0,229,255,0.2); border: 1px solid rgba(0,229,255,0.4); color: #00e5ff; padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; white-space: nowrap; }
+        .copy-btn:hover { background: rgba(0,229,255,0.35); }
     </style>
 </head>
 <body>
 
 <script src="./js/api.js"></script>
-
 <script>
-    // Auth guard with redirect — if not logged in, go to login then come back here
     (function() {
         var user = localStorage.getItem('scipher_user');
         if (!user) {
-            // Save current URL so login can redirect back
             var returnUrl = encodeURIComponent(window.location.href);
             window.location.replace('./login.html?redirect=' + returnUrl);
         }
@@ -131,16 +63,11 @@
     <div class="dots-bottom"><img src="./assets/images/bg-dots-bottom.png" alt=""></div>
     <div class="main-bg__right-ligh"></div>
 
-    <!-- ====== Header ====== -->
     <header class="header">
-        <div class="header__logo">
-            <img src="./assets/images/logo.png" alt="Logo" class="header__logo-img">
-        </div>
+        <div class="header__logo"><img src="./assets/images/logo.png" alt="Logo" class="header__logo-img"></div>
         <div class="header__profile">
             <button class="header__profile-btn" onclick="profileToggle()">
-                <div class="header__profile-image">
-                    <img src="./assets/images/main-select.png" alt="image">
-                </div>
+                <div class="header__profile-image"><img src="./assets/images/main-select.png" alt="image"></div>
                 <div class="header__profile-info">
                     <div class="header__profile-name">
                         <img src="./assets/images/cup_icon.svg" alt="cup icon">
@@ -156,20 +83,17 @@
             <ul class="profile__dropdown" id="profile-dropdown">
                 <li class="profile__dropdown-item">
                     <a href="./user-profile.html" class="profile__dropdown-link">
-                        <img src="./assets/images/profile-icon.svg" alt="profile icon">
-                        <span>Profile</span>
+                        <img src="./assets/images/profile-icon.svg" alt="profile icon"><span>Profile</span>
                     </a>
                 </li>
                 <li class="profile__dropdown-item">
                     <a href="javascript:void(0)" class="profile__dropdown-link" onclick="toggleUserSettings()">
-                        <img src="./assets/images/settings-icon.svg" alt="settings icon">
-                        <span>User settings</span>
+                        <img src="./assets/images/settings-icon.svg" alt="settings icon"><span>User settings</span>
                     </a>
                 </li>
                 <li class="profile__dropdown-item">
                     <a href="javascript:void(0)" class="profile__dropdown-link" onclick="logout()">
-                        <img src="./assets/images/logout-icon.svg" alt="logout icon">
-                        <span>Logout</span>
+                        <img src="./assets/images/logout-icon.svg" alt="logout icon"><span>Logout</span>
                     </a>
                 </li>
             </ul>
@@ -181,23 +105,30 @@
             <div class="scipher__boards">
                 <div class="scipher__boards-header">
 
-                    <!-- ── LEFT: Team 1 (Red) ── -->
+                    <!-- Team 1 (Red) -->
                     <div class="boards__score">
                         <div class="turn__tabs" style="margin-bottom:0;">
-                            <span class="turn__tabs-btn clipt active" id="join-team1-tab" onclick="joinTeam(1)" style="cursor:pointer; background:rgba(180,0,30,0.7); border:1px solid rgba(255,23,68,0.8); display:block; text-align:center;">Join Team 1</span>
+                            <span class="turn__tabs-btn clipt active" id="join-team1-tab" onclick="joinTeam(1)"
+                                style="cursor:pointer; background:rgba(180,0,30,0.8); border:1px solid rgba(255,23,68,0.9); display:block; text-align:center;">
+                                Join Team 1
+                            </span>
                         </div>
-                        <div class="boards__score-header team-red" id="team1-header" style="border-radius:0 0 8px 8px; padding:12px 16px; min-height:55px; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="boards__score-header team-red" id="team1-header" style="border-radius:0 0 8px 8px; padding:12px 16px; min-height:80px; display:flex; flex-direction:column; justify-content:center;">
                             <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-                                <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.8); font-weight:700;">Team 1</span>
+                                <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.9); font-weight:700;">Team 1</span>
                                 <span id="team1-score" style="font-size:1.2rem; font-weight:700; color:#fff;">0</span>
                             </div>
-                            <div id="team1-members" style="font-size:0.78rem; color:rgba(255,255,255,0.75); margin-top:4px; min-height:16px;"></div>
+                            <div style="margin-top:10px; display:flex; flex-direction:column; gap:5px;">
+                                <div class="member-slot" id="team1-slot-1" onclick="toggleMembers(1)"><div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px;"></div><div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div></div>
+                                <div class="member-slot" id="team1-slot-2" onclick="toggleMembers(1)"><div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px;"></div><div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div></div>
+                                <div class="member-slot" id="team1-slot-3" onclick="toggleMembers(1)"><div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px;"></div><div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ── CENTER: Timer ── -->
+                    <!-- Timer -->
                     <div class="boards__clue">
-                        <div class="boards__start">
+                        <div class="boards__start" style="visibility:hidden;">
                             <div class="boards__start-start player">
                                 <svg>
                                     <defs>
@@ -216,61 +147,66 @@
                         </div>
                     </div>
 
-                    <!-- ── RIGHT: Team 2 (Blue) ── -->
+                    <!-- Team 2 (Blue) -->
                     <div class="boards__turn">
                         <div class="turn__tabs" style="margin-bottom:0;">
-                            <span class="turn__tabs-btn clipt active" id="join-team2-tab" onclick="joinTeam(2)" style="cursor:pointer; background:rgba(10,60,140,0.7); border:1px solid rgba(21,101,192,0.8); display:block; text-align:center;">Join Team 2</span>
+                            <span class="turn__tabs-btn clipt active" id="join-team2-tab" onclick="joinTeam(2)"
+                                style="cursor:pointer; background:rgba(10,60,140,0.8); border:1px solid rgba(21,101,192,0.9); display:block; text-align:center;">
+                                Join Team 2
+                            </span>
                             <span class="turn__tabs-btn clipt active" id="turn-label" style="display:none; text-align:center;"></span>
                         </div>
-                        <div class="boards__turn-header team-blue" id="team2-header" style="border-radius:0 0 8px 8px; padding:12px 16px; min-height:55px; display:flex; flex-direction:column; justify-content:center;">
+                        <div class="boards__turn-header team-blue" id="team2-header" style="border-radius:0 0 8px 8px; padding:12px 16px; min-height:80px; display:flex; flex-direction:column; justify-content:center;">
                             <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-                                <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.8); font-weight:700;">Team 2</span>
+                                <span style="font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,0.9); font-weight:700;">Team 2</span>
                                 <span id="team2-score" style="font-size:1.2rem; font-weight:700; color:#fff;">0</span>
                             </div>
-                            <!-- 3 member slots -->
                             <div style="margin-top:10px; display:flex; flex-direction:column; gap:5px;">
-                                <div class="member-slot" id="team2-slot-1" onclick="toggleMembers(2)" style="cursor:pointer;">
-                                    <div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px; transition:background 0.2s;"></div>
-                                    <div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div>
-                                </div>
-                                <div class="member-slot" id="team2-slot-2" onclick="toggleMembers(2)" style="cursor:pointer;">
-                                    <div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px; transition:background 0.2s;"></div>
-                                    <div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div>
-                                </div>
-                                <div class="member-slot" id="team2-slot-3" onclick="toggleMembers(2)" style="cursor:pointer;">
-                                    <div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px; transition:background 0.2s;"></div>
-                                    <div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div>
-                                </div>
+                                <div class="member-slot" id="team2-slot-1" onclick="toggleMembers(2)"><div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px;"></div><div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div></div>
+                                <div class="member-slot" id="team2-slot-2" onclick="toggleMembers(2)"><div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px;"></div><div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div></div>
+                                <div class="member-slot" id="team2-slot-3" onclick="toggleMembers(2)"><div class="member-slot-bar" style="height:3px; background:rgba(255,255,255,0.2); border-radius:2px;"></div><div class="member-slot-name" style="display:none; font-size:0.75rem; color:rgba(255,255,255,0.85); padding:4px 0 0 2px;"></div></div>
                             </div>
                         </div>
                     </div>
 
                 </div>
 
-                <!-- ── Game Area ── -->
+                <!-- Game Area -->
                 <div class="taboo__content">
 
+                    <!-- Host START GAME button -->
+                    <div id="start-game-area">
+                        <button id="start-game-btn" onclick="hostStartGame()" disabled
+                            style="background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.3); padding:12px 48px; border-radius:10px; font-size:1.05rem; font-weight:800; cursor:not-allowed; letter-spacing:2px; transition:all 0.25s; text-transform:uppercase;">
+                            ▶ Start Game
+                        </button>
+                        <p id="start-game-hint" style="color:rgba(255,255,255,0.28); font-size:0.76rem; margin-top:6px;">Join a team first to start</p>
+                    </div>
+                    <!-- Non-host waiting -->
+                    <div id="nonhost-wait-msg">⏳ Waiting for the host to start the game...</div>
 
+                    <!-- Share URL -->
+                    <div id="room-share-banner">
+                        <p>🔗 Share with friends:</p>
+                        <span class="room-url" id="room-url-display"></span>
+                        <button class="copy-btn" onclick="copyRoomUrl()">Copy Link</button>
+                    </div>
 
-                    
-
-                    <!-- Word display (hidden until turn starts) -->
+                    <!-- Word display -->
                     <div id="current-word-display" style="display:none;">
                         <p style="color:rgba(255,255,255,0.5); font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">Describe this word — don't say the taboo words!</p>
                         <h2 id="target-word"></h2>
                         <div id="taboo-words-list"></div>
                     </div>
 
-
-
-                    <!-- Game controls -->
+                    <!-- Game controls (skip/end) -->
                     <div id="game-controls" style="display:none;">
-                        <button class="ctrl-btn" id="start-turn-btn" onclick="startTurn()">▶ Start Turn — Team 1</button>
+                        <button class="ctrl-btn" id="start-turn-btn" onclick="startTurn()">▶ Start Turn</button>
                         <button class="ctrl-btn" id="skip-btn" onclick="skipWord()">⏭ Skip Word</button>
                         <button class="ctrl-btn" id="end-turn-btn" onclick="endTurn(false)">⏹ End Turn</button>
                     </div>
 
-                    <!-- Search / guess input -->
+                    <!-- Guess input -->
                     <div class="taboo__search" id="guess-area" style="display:none;">
                         <div class="taboo__search-form">
                             <div class="taboo__search-form-row">
@@ -280,7 +216,7 @@
                         </div>
                     </div>
 
-                    <!-- Contributions / game log -->
+                    <!-- Contributions -->
                     <div class="card" id="contributions-card" style="display:none;">
                         <div class="card-header">
                             <div class="card-header-heading">
@@ -296,31 +232,19 @@
                 </div>
             </div>
 
-            <!-- ── Log / Chat panel ── -->
+            <!-- Log / Chat panel -->
             <div class="scipher__log log__taboo" id="scipher__log">
                 <div class="log__header">
                     <div class="log__header-buttons">
-                        <button type="button" onclick="chatLog()" class="log__header-btn log-btn">
-                            <img src="./assets/images/door-icon.svg" alt="icon">
-                        </button>
+                        <button type="button" onclick="chatLog()" class="log__header-btn log-btn"><img src="./assets/images/door-icon.svg" alt="icon"></button>
                         <div class="log__header-btns">
-                            <button type="button" onclick="toggleChangeName()" class="log__header-btn">
-                                <img src="./assets/images/t-icon.svg" alt="icon">
-                            </button>
-                            <button type="button" onclick="toggleRoomSettings()" class="log__header-btn">
-                                <img src="./assets/images/settings-icon.svg" alt="icon">
-                            </button>
-                            <button type="button" onclick="toggleResetGame()" class="log__header-btn">
-                                <img src="./assets/images/spinn-icon.svg" alt="icon">
-                            </button>
-                            <button type="button" onclick="toggleRoomLobby()" class="log__header-btn">
-                                <img src="./assets/images/user-group-icon.svg" alt="icon">
-                            </button>
+                            <button type="button" onclick="toggleChangeName()" class="log__header-btn"><img src="./assets/images/t-icon.svg" alt="icon"></button>
+                            <button type="button" onclick="toggleRoomSettings()" class="log__header-btn"><img src="./assets/images/settings-icon.svg" alt="icon"></button>
+                            <button type="button" onclick="toggleResetGame()" class="log__header-btn"><img src="./assets/images/spinn-icon.svg" alt="icon"></button>
+                            <button type="button" onclick="toggleRoomLobby()" class="log__header-btn"><img src="./assets/images/user-group-icon.svg" alt="icon"></button>
                         </div>
                     </div>
                 </div>
-
-                <!-- Game Log Card -->
                 <div class="card game-log-card" id="log-card">
                     <div class="card-header">
                         <div class="card-header-heading">
@@ -331,19 +255,14 @@
                     <div class="card-body">
                         <div class="taboo__gamelog custom-scrollbar">
                             <div class="taboo__gamelog-content" id="game-log-content">
-                                <p class="taboo__gamelog-text">Welcome! Join a team and share the link with friends to start playing.</p>
+                                <p class="taboo__gamelog-text">Welcome! Join a team and share the link with friends.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Chat Card -->
                 <div class="card chat" id="chat-card">
                     <div class="card-header chat__header">
-                        <div class="card-header-heading">
-                            <img src="./assets/images/chat-icon.svg" alt="Chat icon">
-                            <h6 class="text-uppercase">Chats</h6>
-                        </div>
+                        <div class="card-header-heading"><img src="./assets/images/chat-icon.svg" alt="Chat icon"><h6 class="text-uppercase">Chats</h6></div>
                         <div class="chat__tabs">
                             <button type="button" class="chat__tabs-btn team-1" data-id="tab-content-team-1">Team 1</button>
                             <button type="button" class="chat__tabs-btn team-2 active" data-id="tab-content-team-2">Team 2</button>
@@ -355,9 +274,7 @@
                             <form action="#" class="chat__form">
                                 <div class="chat__form-row">
                                     <input type="text" placeholder="Post message..." class="chat__form-input">
-                                    <button type="submit" class="chat__form-btn">
-                                        <img src="./assets/images/send-icon.svg" alt="Send icon">
-                                    </button>
+                                    <button type="submit" class="chat__form-btn"><img src="./assets/images/send-icon.svg" alt="Send icon"></button>
                                 </div>
                             </form>
                         </div>
@@ -368,158 +285,12 @@
     </main>
 </div>
 
-<!-- ====== Suggest A Word Modal ====== -->
-<div class="backdrop" id="change-team-name">
-    <div class="modal-content">
-        <div class="card change-name-card">
-            <div class="card-header">
-                <div class="card-header-heading">
-                    <img src="./assets/images/t-icon.svg" alt="Edit Icon">
-                    <h6>SUGGEST A WORD</h6>
-                </div>
-                <button type="button" class="btn btn-sm" onclick="toggleChangeName()">
-                    <img src="./assets/images/close-icon.svg" alt="close icon">
-                </button>
-            </div>
-            <div class="card-body">
-                <form action="#" class="scipher__form">
-                    <label for="suggest-word">Suggest word</label>
-                    <div class="scipher__form-row">
-                        <input type="text" name="suggest-word" id="suggest-word">
-                        <button type="submit" class="btn btn-dark">Submit</button>
-                    </div>
-                    <p class="form-row-text">Suggest a word to be added to the existing pack.</p>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ====== Room Settings Modal ====== -->
-<div class="backdrop" id="room-settings">
-    <div class="modal-content">
-        <div class="card room-settings-card">
-            <div class="card-header">
-                <div class="card-header-heading">
-                    <img src="./assets/images/settings-icon.svg" alt="Edit Icon">
-                    <h6>Room settings</h6>
-                </div>
-                <button type="button" class="btn btn-sm" onclick="toggleRoomSettings()">
-                    <img src="./assets/images/close-icon.svg" alt="close icon">
-                </button>
-            </div>
-            <div class="card-body">
-                <form action="#" class="scipher__form">
-                    <div class="login__form-row">
-                        <label class="mb-8">Words per turn</label>
-                        <select name="room-grid-size" id="room-grid-size">
-                            <option value="6">6</option>
-                            <option value="8">8</option>
-                            <option value="10">10</option>
-                            <option value="12">12</option>
-                            <option value="14">14</option>
-                        </select>
-                    </div>
-                    <div class="login__form-row pt-8">
-                        <label class="mb-8">Seconds per turn</label>
-                        <select name="cards-per-team" id="cards-per-team">
-                            <option value="40">40</option>
-                            <option value="60">60</option>
-                            <option value="75">75</option>
-                            <option value="85">85</option>
-                            <option value="100">100</option>
-                        </select>
-                    </div>
-                    <div class="scipher__form-row justify-content-end" style="margin-top:16px;">
-                        <button type="submit" class="btn btn-dark">Save settings</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ====== Room Lobby Modal ====== -->
-<div class="backdrop" id="room-lobby">
-    <div class="modal-content">
-        <div class="card room-lobby-card">
-            <div class="card-header">
-                <div class="card-header-heading">
-                    <img src="./assets/images/people.svg" alt="Icon">
-                    <h6>Room lobby</h6>
-                </div>
-                <button type="button" class="btn btn-sm" onclick="toggleRoomLobby()">
-                    <img src="./assets/images/close-icon.svg" alt="close icon">
-                </button>
-            </div>
-            <div class="card-body">
-                <ul class="card__list" id="lobby-list">
-                    <li style="padding:16px; color:rgba(255,255,255,0.4); font-size:0.85rem;">No players yet.</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ====== Reset Game Modal ====== -->
-<div class="backdrop" id="reset-game-modal">
-    <div class="modal-content">
-        <div class="card change-name-card">
-            <div class="card-header">
-                <div class="card-header-heading">
-                    <img src="./assets/images/reset-icon.svg" alt="Reset Icon">
-                    <h6>Restart game</h6>
-                </div>
-                <button type="button" class="btn btn-sm" onclick="toggleResetGame()">
-                    <img src="./assets/images/close-icon.svg" alt="close icon">
-                </button>
-            </div>
-            <div class="card-body">
-                <div class="scipher__form-texts">
-                    <p class="fw-medium">Do you confirm restarting the game?</p>
-                    <p class="color-yellow text-uppercase fw-medium mt-12">Warning! This will reset the currently running game!</p>
-                </div>
-                <div class="scipher__form-row justify-content-center" style="margin-top:16px;">
-                    <button type="button" class="scipher__form-cancel" onclick="toggleResetGame()">Cancel</button>
-                    <button type="button" class="btn btn-dark" onclick="resetGame()">Confirm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ====== User Settings Modal ====== -->
-<div class="backdrop" id="user-settings">
-    <div class="modal-content">
-        <div class="card user-settings-card">
-            <div class="card-header">
-                <div class="card-header-heading">
-                    <img src="./assets/images/settings-icon.svg" alt="Gear icon">
-                    <h6 class="card-title">User Settings</h6>
-                </div>
-                <button type="button" class="btn btn-sm" onclick="toggleUserSettings()">
-                    <img src="./assets/images/close-icon.svg" alt="close icon">
-                </button>
-            </div>
-            <div class="card-body">
-                <form action="#" class="form">
-                    <div class="form-row">
-                        <label for="user-name">Change Username</label>
-                        <input type="text" id="user-name" class="form-row-input">
-                        <p class="form-row-text">Username can only be changed once a week.</p>
-                    </div>
-                    <div class="form-row">
-                        <label for="win-rate">Hide win rate on profile page</label>
-                        <select id="win-rate"><option value="no">No</option></select>
-                    </div>
-                    <div class="form-button">
-                        <button type="submit" class="btn form-button-btn">Save user settings</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Modals -->
+<div class="backdrop" id="change-team-name"><div class="modal-content"><div class="card change-name-card"><div class="card-header"><div class="card-header-heading"><img src="./assets/images/t-icon.svg" alt=""><h6>SUGGEST A WORD</h6></div><button type="button" class="btn btn-sm" onclick="toggleChangeName()"><img src="./assets/images/close-icon.svg" alt=""></button></div><div class="card-body"><form action="#" class="scipher__form"><label>Suggest word</label><div class="scipher__form-row"><input type="text" id="suggest-word"><button type="submit" class="btn btn-dark">Submit</button></div></form></div></div></div></div>
+<div class="backdrop" id="room-settings"><div class="modal-content"><div class="card room-settings-card"><div class="card-header"><div class="card-header-heading"><img src="./assets/images/settings-icon.svg" alt=""><h6>Room settings</h6></div><button type="button" class="btn btn-sm" onclick="toggleRoomSettings()"><img src="./assets/images/close-icon.svg" alt=""></button></div><div class="card-body"><form action="#" class="scipher__form"><div class="login__form-row"><label class="mb-8">Words per turn</label><select id="room-grid-size"><option>6</option><option>8</option><option>10</option><option>12</option><option>14</option></select></div><div class="login__form-row pt-8"><label class="mb-8">Seconds per turn</label><select id="cards-per-team"><option>40</option><option>60</option><option>75</option><option>85</option><option>100</option></select></div><div class="scipher__form-row justify-content-end" style="margin-top:16px;"><button type="submit" class="btn btn-dark">Save</button></div></form></div></div></div></div>
+<div class="backdrop" id="room-lobby"><div class="modal-content"><div class="card room-lobby-card"><div class="card-header"><div class="card-header-heading"><img src="./assets/images/people.svg" alt=""><h6>Room lobby</h6></div><button type="button" class="btn btn-sm" onclick="toggleRoomLobby()"><img src="./assets/images/close-icon.svg" alt=""></button></div><div class="card-body"><ul class="card__list" id="lobby-list"><li style="padding:16px; color:rgba(255,255,255,0.4); font-size:0.85rem;">No players yet.</li></ul></div></div></div></div>
+<div class="backdrop" id="reset-game-modal"><div class="modal-content"><div class="card change-name-card"><div class="card-header"><div class="card-header-heading"><img src="./assets/images/reset-icon.svg" alt=""><h6>Restart game</h6></div><button type="button" class="btn btn-sm" onclick="toggleResetGame()"><img src="./assets/images/close-icon.svg" alt=""></button></div><div class="card-body"><div class="scipher__form-texts"><p class="fw-medium">Do you confirm restarting the game?</p><p class="color-yellow text-uppercase fw-medium mt-12">Warning! This will reset the game!</p></div><div class="scipher__form-row justify-content-center" style="margin-top:16px;"><button type="button" class="scipher__form-cancel" onclick="toggleResetGame()">Cancel</button><button type="button" class="btn btn-dark" onclick="resetGame()">Confirm</button></div></div></div></div></div>
+<div class="backdrop" id="user-settings"><div class="modal-content"><div class="card user-settings-card"><div class="card-header"><div class="card-header-heading"><img src="./assets/images/settings-icon.svg" alt=""><h6 class="card-title">User Settings</h6></div><button type="button" class="btn btn-sm" onclick="toggleUserSettings()"><img src="./assets/images/close-icon.svg" alt=""></button></div><div class="card-body"><form action="#" class="form"><div class="form-row"><label>Change Username</label><input type="text" id="user-name" class="form-row-input"><p class="form-row-text">Username can only be changed once a week.</p></div><div class="form-button"><button type="submit" class="btn form-button-btn">Save</button></div></form></div></div></div></div>
 
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" referrerpolicy="no-referrer"></script>
@@ -529,121 +300,190 @@
 <script src="./js/auth.js"></script>
 
 <script>
-// ── Load user ────────────────────────────────────────────────
+// ─── Config ───────────────────────────────────────────────────
+var BACKEND_URL = 'https://scipher-backend-production.up.railway.app'; // ← your Railway URL
+
+// ─── User ─────────────────────────────────────────────────────
 var currentUser = SipherAPI ? SipherAPI.getUser() : JSON.parse(localStorage.getItem('scipher_user') || 'null');
 var username = currentUser ? currentUser.username : 'Player';
 
-// ── Load game settings from create-taboo ─────────────────────
-var settings = JSON.parse(localStorage.getItem('taboo_settings') || '{}');
+// ─── Settings ─────────────────────────────────────────────────
+var settings     = JSON.parse(localStorage.getItem('taboo_settings') || '{}');
 var originalTime = parseInt(settings.timePerTurn) || 60;
 var wordsPerTurn = parseInt(settings.wordsPerTurn) || 7;
-var roomName = settings.roomName || 'Taboo Room';
+var roomName     = settings.roomName || 'Taboo Room';
+var isHost       = settings.createdBy === username;
+var roomCode     = settings.roomCode || roomName.replace(/[^a-zA-Z0-9]/g,'').toUpperCase().substring(0,12);
 
-// isHost = true only for the person who created the room
-// When create-taboo.html saves settings, it also saves the creator's username
-var isHost = settings.createdBy === username;
+// Show start-game-area only to host initially (greyed out until joined)
+if (isHost) {
+    document.getElementById('start-game-area').style.display = 'block';
+} else {
+    document.getElementById('start-game-area').style.display = 'none';
+}
 
-// ── Hide entire timer until game starts ──────────────────
-document.querySelector('.boards__start').style.visibility = 'hidden';
+// ─── Room URL ──────────────────────────────────────────────────
+document.getElementById('room-url-display').textContent = window.location.href;
+function copyRoomUrl() {
+    navigator.clipboard.writeText(window.location.href).then(function() {
+        var btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy Link'; }, 2000);
+    });
+}
 
-
-
-// ── Team state ────────────────────────────────────────────────
-var teams = { 1: [], 2: [] };
+// ─── State ────────────────────────────────────────────────────
+var teams  = { 1: [], 2: [] };
 var myTeam = null;
+var membersVisible = { 1: false, 2: false };
 var gameState = {
-    started: false,
-    currentTeam: 1,
+    started: false, currentTeam: 1,
     scores: { 1: 0, 2: 0 },
-    timeLeft: originalTime,
-    timerInterval: null,
-    words: [],
-    currentWordIndex: 0,
-    wordsRevealedThisTurn: 0
+    timeLeft: originalTime, timerInterval: null,
+    words: [], currentWordIndex: 0, wordsRevealedThisTurn: 0
 };
 
-// ── Join team ─────────────────────────────────────────────────
+// ─── Socket.IO ────────────────────────────────────────────────
+var socket = null;
+try {
+    var token    = localStorage.getItem('scipher_token');
+    var guestName = currentUser ? currentUser.username : 'Guest';
+    socket = io(BACKEND_URL, {
+        auth: token ? { token: token } : { guestName: guestName },
+        reconnectionAttempts: 5
+    });
+    socket.on('connect', function() {
+        addLog('🔗 Connected to server.');
+        socket.emit('room:join', { roomCode: roomCode, team: null });
+    });
+    socket.on('connect_error', function() {
+        addLog('⚠️ Running in local mode (no server).');
+    });
+    socket.on('room:state', function(data) {
+        if (data.players) {
+            data.players.forEach(function(p) {
+                var t = p.team === 'team2' ? 2 : 1;
+                if (!teams[t].includes(p.username)) teams[t].push(p.username);
+            });
+            updateTeamSlots(1); updateTeamSlots(2); updateLobby();
+        }
+    });
+    socket.on('room:playerJoined', function(data) {
+        if (data.username === username) return;
+        var t = data.team === 'team2' ? 2 : 1;
+        if (!teams[t].includes(data.username)) {
+            teams[t].push(data.username);
+            updateTeamSlots(t); updateLobby();
+            addLog('👤 <strong>' + data.username + '</strong> joined Team ' + t + '!');
+        }
+    });
+    socket.on('room:playerLeft', function(data) {
+        [1,2].forEach(function(t) {
+            teams[t] = teams[t].filter(function(n) { return n !== data.username; });
+            updateTeamSlots(t);
+        });
+        updateLobby();
+        addLog('👋 ' + data.username + ' left.');
+    });
+    socket.on('game:scoreUpdate', function(data) {
+        if (data.scores) {
+            gameState.scores[1] = data.scores.team1 || 0;
+            gameState.scores[2] = data.scores.team2 || 0;
+            updateScores();
+        }
+    });
+} catch(e) { console.warn('Socket unavailable'); }
+
+// ─── Join Team ────────────────────────────────────────────────
 function joinTeam(teamNum) {
+    // Allow switching teams
+    if (myTeam === teamNum) { addLog('You are already on Team ' + teamNum + '.'); return; }
+
+    // Remove from old team
     if (myTeam !== null) {
-        addLog('You are already on Team ' + myTeam + '.');
-        return;
+        teams[myTeam] = teams[myTeam].filter(function(n) { return n !== username; });
+        updateTeamSlots(myTeam);
+        addLog('🔄 Switched to Team ' + teamNum + '.');
     }
 
     myTeam = teamNum;
-    teams[teamNum].push(username);
-
-    // Hide this team's join tab
-    document.getElementById('join-team' + teamNum + '-tab').style.display = 'none';
-
-    // Disable other team's join tab
-    var other = 3 - teamNum;
-    var otherTab = document.getElementById('join-team' + other + '-tab');
-    if (otherTab) { otherTab.onclick = null; otherTab.style.opacity = '0.4'; otherTab.style.cursor = 'not-allowed'; }
-
-    // Turn label stays hidden until game starts
-
-    // Update member slots
-    teams[teamNum].push(username); // ensure added before update (may already be added above)
-    // Deduplicate
-    teams[teamNum] = teams[teamNum].filter(function(v, i, a) { return a.indexOf(v) === i; });
+    if (!teams[teamNum].includes(username)) teams[teamNum].push(username);
     updateTeamSlots(teamNum);
 
-    // Show start button only to host, waiting msg to guests
+    // Update tab styles — highlight joined, keep other clickable
+    var joinedTab = document.getElementById('join-team' + teamNum + '-tab');
+    var otherTab  = document.getElementById('join-team' + (3-teamNum) + '-tab');
+    if (joinedTab) {
+        joinedTab.textContent = '✅ Team ' + teamNum + ' (You)';
+        joinedTab.style.opacity = '1';
+        joinedTab.style.cursor  = 'default';
+        joinedTab.style.background = teamNum === 1 ? 'rgba(180,0,30,0.95)' : 'rgba(10,60,140,0.95)';
+        joinedTab.onclick = null;
+    }
+    if (otherTab) {
+        otherTab.style.opacity = '1';
+        otherTab.style.cursor  = 'pointer';
+        otherTab.textContent   = 'Join Team ' + (3-teamNum);
+        var ot = 3-teamNum;
+        otherTab.onclick = function() { joinTeam(ot); };
+    }
+
+    // Show host start button (enabled) or guest waiting message
     if (isHost) {
         document.getElementById('start-game-area').style.display = 'block';
-        var startBtn = document.getElementById('start-game-btn');
-        startBtn.disabled = false;
-        startBtn.style.background = 'linear-gradient(135deg, #00c853, #00e676)';
-        startBtn.style.border = '1px solid rgba(0,230,118,0.6)';
-        startBtn.style.color = '#000';
-        startBtn.style.cursor = 'pointer';
+        var btn = document.getElementById('start-game-btn');
+        btn.disabled = false;
+        btn.style.background = 'linear-gradient(135deg,#00c853,#00e676)';
+        btn.style.border  = '2px solid rgba(0,230,118,0.7)';
+        btn.style.color   = '#000';
+        btn.style.cursor  = 'pointer';
         document.getElementById('start-game-hint').style.display = 'none';
+        document.getElementById('nonhost-wait-msg').style.display = 'none';
     } else {
+        document.getElementById('start-game-area').style.display = 'none';
         document.getElementById('nonhost-wait-msg').style.display = 'block';
     }
 
-    // Show game area elements
-    document.getElementById('waiting-msg').style.display = 'none';
-    document.getElementById('game-controls').style.display = 'none'; // hide old controls — using start-game-btn instead
     document.getElementById('contributions-card').style.display = 'block';
-    document.getElementById('start-turn-btn').textContent = '▶ Start Turn — Team 1';
+
+    // Emit to server
+    if (socket && socket.connected) {
+        socket.emit('room:join', { roomCode: roomCode, team: 'team' + teamNum });
+    }
 
     addLog('✅ ' + username + ' joined Team ' + teamNum + '!');
     updateLobby();
 }
 
-// ── Update lobby modal ────────────────────────────────────────
+// ─── Lobby & Slots ────────────────────────────────────────────
 function updateLobby() {
     var list = document.getElementById('lobby-list');
     list.innerHTML = '';
-    [1, 2].forEach(function(t) {
+    var any = false;
+    [1,2].forEach(function(t) {
         teams[t].forEach(function(name) {
+            any = true;
             var li = document.createElement('li');
             li.className = 'card__list-item justify-content-between p-8';
             li.innerHTML = '<div class="card__info"><div class="card__info-text"><p class="color-cyan">' + name + '</p><p class="text-italic ml-8">(Team ' + t + ')</p></div></div>';
             list.appendChild(li);
         });
     });
-    if (teams[1].length === 0 && teams[2].length === 0) {
-        list.innerHTML = '<li style="padding:16px; color:rgba(255,255,255,0.4); font-size:0.85rem;">No players yet.</li>';
-    }
-    // Also update team slots
-    updateTeamSlots(1);
-    updateTeamSlots(2);
+    if (!any) list.innerHTML = '<li style="padding:16px; color:rgba(255,255,255,0.4); font-size:0.85rem;">No players yet.</li>';
+    updateTeamSlots(1); updateTeamSlots(2);
 }
 
-// ── Update the 3 slot lines for a team ────────────────────────
 function updateTeamSlots(teamNum) {
     var members = teams[teamNum];
     for (var i = 1; i <= 3; i++) {
         var slot = document.getElementById('team' + teamNum + '-slot-' + i);
         if (!slot) continue;
-        var bar = slot.querySelector('.member-slot-bar');
+        var bar  = slot.querySelector('.member-slot-bar');
         var name = slot.querySelector('.member-slot-name');
-        var member = members[i - 1];
+        var member = members[i-1];
         if (member) {
             slot.classList.add('filled');
-            bar.style.background = teamNum === 1 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)';
+            bar.style.background = 'rgba(255,255,255,0.85)';
             name.textContent = member;
         } else {
             slot.classList.remove('filled');
@@ -654,304 +494,219 @@ function updateTeamSlots(teamNum) {
     }
 }
 
-// ── Toggle showing member names on click ──────────────────────
-var membersVisible = { 1: false, 2: false };
 function toggleMembers(teamNum) {
     membersVisible[teamNum] = !membersVisible[teamNum];
-    var members = teams[teamNum];
     for (var i = 1; i <= 3; i++) {
         var slot = document.getElementById('team' + teamNum + '-slot-' + i);
         if (!slot) continue;
         var nameEl = slot.querySelector('.member-slot-name');
-        var member = members[i - 1];
-        if (member && membersVisible[teamNum]) {
-            nameEl.style.display = 'block';
-        } else {
-            nameEl.style.display = 'none';
-        }
+        var member = teams[teamNum][i-1];
+        nameEl.style.display = (member && membersVisible[teamNum]) ? 'block' : 'none';
     }
 }
 
-// ── Load word pack ────────────────────────────────────────────
+// ─── Word Pack ────────────────────────────────────────────────
 fetch('./assets/data/taboo-words.json')
-    .then(function(res) { return res.json(); })
+    .then(function(r) { return r.json(); })
     .then(function(data) {
-        var difficulty = settings.difficulty || 'easy';
         var pool = [];
-        if (settings.useOfficialPack !== false) {
-            pool = pool.concat(data[difficulty] || data['easy']);
-        }
-        if (settings.customWords && settings.customWords.length > 0) {
-            settings.customWords.forEach(function(w) {
-                pool.push({ word: w, taboo: [] });
-            });
-        }
-        if (pool.length === 0) pool = data['easy'];
+        if (settings.useOfficialPack !== false) pool = pool.concat(data[settings.difficulty || 'easy'] || data['easy']);
+        if (settings.customWords && settings.customWords.length > 0)
+            settings.customWords.forEach(function(w) { pool.push({ word: w, taboo: [] }); });
+        if (!pool.length) pool = data['easy'];
         gameState.words = shuffle(pool);
-        addLog('📦 Loaded ' + gameState.words.length + ' words (' + (settings.difficulty || 'easy') + ' difficulty).');
+        addLog('📦 ' + gameState.words.length + ' words loaded (' + (settings.difficulty||'easy') + ').');
     })
-    .catch(function() {
-        addLog('⚠️ Could not load word pack. Check assets/data/taboo-words.json exists.');
-    });
+    .catch(function() { addLog('⚠️ Could not load word pack.'); });
 
-// ── Start Turn ────────────────────────────────────────────────
+// ─── Host Start ───────────────────────────────────────────────
+function hostStartGame() {
+    if (!myTeam) { addLog('⚠️ Join a team before starting.'); return; }
+    startTurn();
+}
+
+// ─── Start Turn ───────────────────────────────────────────────
 function startTurn() {
     if (!myTeam) { addLog('Join a team first!'); return; }
-
     gameState.started = true;
     gameState.timeLeft = originalTime;
     gameState.wordsRevealedThisTurn = 0;
     gameState.currentWordIndex = Math.floor(Math.random() * gameState.words.length);
 
     document.getElementById('start-game-area').style.display = 'none';
+    document.getElementById('nonhost-wait-msg').style.display = 'none';
     document.getElementById('game-controls').style.display = 'flex';
     document.getElementById('start-turn-btn').style.display = 'none';
     document.getElementById('skip-btn').style.display = 'inline-block';
     document.getElementById('end-turn-btn').style.display = 'inline-block';
     document.getElementById('current-word-display').style.display = 'block';
     document.getElementById('guess-area').style.display = 'block';
+    document.querySelector('.boards__start').style.visibility = 'visible';
 
-    showWord();
-    startTimer();
+    showWord(); startTimer();
 
-    document.getElementById('turn-label').textContent = 'Team ' + gameState.currentTeam + '\'s Turn';
-    addLog('🎮 Team ' + gameState.currentTeam + '\'s turn! Describe ' + wordsPerTurn + ' words in ' + originalTime + 's.');
+    var tl = document.getElementById('turn-label');
+    tl.style.display = ''; tl.textContent = "Team " + gameState.currentTeam + "'s Turn";
+
+    if (socket && socket.connected) socket.emit('room:start', { roomCode: roomCode });
+    addLog('🎮 Team ' + gameState.currentTeam + "'s turn! " + wordsPerTurn + ' words, ' + originalTime + 's.');
 }
 
-// ── Show word card ────────────────────────────────────────────
+// ─── Show Word ────────────────────────────────────────────────
 function showWord() {
     if (gameState.currentWordIndex >= gameState.words.length) gameState.currentWordIndex = 0;
     var entry = gameState.words[gameState.currentWordIndex];
-
     document.getElementById('target-word').textContent = entry.word;
-    var tabooList = document.getElementById('taboo-words-list');
-    tabooList.innerHTML = entry.taboo.length
-        ? entry.taboo.map(function(t) { return '<span class="taboo-word-tag">' + t + '</span>'; }).join('')
-        : '<span style="color:rgba(255,255,255,0.3); font-size:0.8rem;">No taboo words for this entry</span>';
-
-    var input = document.getElementById('guess-input');
-    if (input) { input.value = ''; input.focus(); }
+    document.getElementById('taboo-words-list').innerHTML = entry.taboo.length
+        ? entry.taboo.map(function(t) { return '<span class="taboo-word-tag">'+t+'</span>'; }).join('')
+        : '<span style="color:rgba(255,255,255,0.3);font-size:0.8rem;">No taboo words</span>';
+    var inp = document.getElementById('guess-input');
+    if (inp) { inp.value=''; inp.focus(); }
 }
 
-// ── Check guess ───────────────────────────────────────────────
+// ─── Check Guess ──────────────────────────────────────────────
 function checkGuess() {
     if (!gameState.started) return;
-    var input = document.getElementById('guess-input');
-    var guess = input.value.trim().toLowerCase();
+    var inp = document.getElementById('guess-input');
+    var guess  = inp.value.trim().toLowerCase();
     var target = gameState.words[gameState.currentWordIndex].word.toLowerCase();
-
     if (!guess) return;
-
     if (guess === target || similarity(guess, target) >= 0.8) {
         gameState.scores[gameState.currentTeam]++;
         gameState.wordsRevealedThisTurn++;
         updateScores();
-        addContribution(gameState.words[gameState.currentWordIndex].word, true);
+        addContribution(gameState.words[gameState.currentWordIndex].word);
         addLog('✅ <strong>' + gameState.words[gameState.currentWordIndex].word + '</strong> — Correct! Team ' + gameState.currentTeam + ' +1');
-
-    // Emit score update to server
-    if (socket && socket.connected) {
-        socket.emit('game:wordRevealed', {
-            roomCode: roomCode,
-            word: gameState.words[gameState.currentWordIndex].word,
-            team: 'team' + gameState.currentTeam
-        });
-    }
-
-        if (gameState.wordsRevealedThisTurn >= wordsPerTurn) {
-            endTurn(true);
-            return;
-        }
-        gameState.currentWordIndex++;
-        showWord();
+        if (socket && socket.connected) socket.emit('game:wordRevealed', { roomCode: roomCode, word: gameState.words[gameState.currentWordIndex].word, team: 'team'+gameState.currentTeam });
+        if (gameState.wordsRevealedThisTurn >= wordsPerTurn) { endTurn(true); return; }
+        gameState.currentWordIndex++; showWord();
     } else {
-        addLog('❌ "' + guess + '" — not quite, keep trying!');
-        input.value = '';
-        input.focus();
+        addLog('❌ "' + guess + '" — not quite!');
+        inp.value=''; inp.focus();
     }
 }
+document.addEventListener('keydown', function(e) { if (e.key === 'Enter' && gameState.started) checkGuess(); });
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && gameState.started) checkGuess();
-});
-
-// ── Skip word ─────────────────────────────────────────────────
+// ─── Skip ─────────────────────────────────────────────────────
 function skipWord() {
     if (!gameState.started) return;
     addLog('⏭ Skipped: <strong>' + gameState.words[gameState.currentWordIndex].word + '</strong>');
-    gameState.currentWordIndex++;
-    showWord();
+    gameState.currentWordIndex++; showWord();
 }
 
-// ── Timer ─────────────────────────────────────────────────────
+// ─── Timer ────────────────────────────────────────────────────
 function startTimer() {
-    clearInterval(gameState.timerInterval);
-    // Show timer when game starts
-    document.querySelector('.boards__start').style.visibility = 'visible';
-    updateTimerDisplay();
+    clearInterval(gameState.timerInterval); updateTimerDisplay();
     gameState.timerInterval = setInterval(function() {
         gameState.timeLeft--;
         updateTimerDisplay();
-        if (gameState.timeLeft <= 0) {
-            clearInterval(gameState.timerInterval);
-            endTurn(false);
-        }
+        if (gameState.timeLeft <= 0) { clearInterval(gameState.timerInterval); endTurn(false); }
     }, 1000);
 }
-
 function updateTimerDisplay() {
     var el = document.getElementById('player-timer-value');
-    if (el) {
-        el.textContent = gameState.timeLeft;
-        el.style.color = gameState.timeLeft <= 10 ? '#ff4444' : '#fff';
-    }
+    if (el) { el.textContent = gameState.timeLeft; el.style.color = gameState.timeLeft <= 10 ? '#ff4444' : '#fff'; }
     var circle = document.querySelector('.taboo-start-color-bg');
     if (circle) {
-        var circ = 2 * Math.PI * 28;
-        var progress = gameState.timeLeft / originalTime;
-        circle.style.strokeDasharray = circ;
-        circle.style.strokeDashoffset = circ * (1 - progress);
+        var c = 2*Math.PI*28, p = gameState.timeLeft/originalTime;
+        circle.style.strokeDasharray = c; circle.style.strokeDashoffset = c*(1-p);
     }
 }
 
-// ── End Turn ──────────────────────────────────────────────────
+// ─── End Turn ─────────────────────────────────────────────────
 function endTurn(completed) {
     clearInterval(gameState.timerInterval);
     gameState.started = false;
 
-    // Show start button only to the player whose turn is next
-    var myTeamNum = myTeam; // the team this player joined
-    if (myTeamNum === gameState.currentTeam) {
-        document.getElementById('start-game-area').style.display = 'block';
-        document.getElementById('start-game-btn').textContent = '▶ START YOUR TURN — Team ' + gameState.currentTeam;
-        document.getElementById('nonhost-wait-msg').style.display = 'none';
-    } else {
-        document.getElementById('start-game-area').style.display = 'none';
-        document.getElementById('nonhost-wait-msg').style.display = 'block';
-        document.getElementById('nonhost-wait-msg').textContent = '⏳ Waiting for Team ' + gameState.currentTeam + ' to start their turn...';
-    }
-    document.getElementById('game-controls').style.display = 'none';
-    document.getElementById('start-turn-btn').style.display = 'none';
-    document.getElementById('skip-btn').style.display = 'none';
-    document.getElementById('end-turn-btn').style.display = 'none';
-    document.getElementById('current-word-display').style.display = 'none';
-    document.getElementById('guess-area').style.display = 'none';
-
     var reason = completed ? 'all words done' : 'time ran out';
-    addLog('🏁 Turn ended (' + reason + '). Team ' + gameState.currentTeam + ' revealed ' + gameState.wordsRevealedThisTurn + ' word(s).');
+    addLog('🏁 Turn ended (' + reason + '). Team ' + gameState.currentTeam + ' got ' + gameState.wordsRevealedThisTurn + ' word(s).');
 
     // Switch team
     gameState.currentTeam = gameState.currentTeam === 1 ? 2 : 1;
-    document.getElementById('start-turn-btn').textContent = '▶ Start Turn — Team ' + gameState.currentTeam;
-    document.getElementById('turn-label').textContent = 'Team ' + gameState.currentTeam + '\'s turn';
-
-    // Reset timer display
     gameState.timeLeft = originalTime;
     updateTimerDisplay();
-
     gameState.words = shuffle(gameState.words);
-}
 
-// ── Reset game ────────────────────────────────────────────────
-function resetGame() {
-    clearInterval(gameState.timerInterval);
-    gameState.scores = { 1: 0, 2: 0 };
-    gameState.currentTeam = 1;
-    gameState.timeLeft = originalTime;
-    gameState.started = false;
-    gameState.wordsRevealedThisTurn = 0;
-    updateScores();
-    updateTimerDisplay();
-    // Show start button only to the player whose turn is next
-    var myTeamNum = myTeam; // the team this player joined
-    if (myTeamNum === gameState.currentTeam) {
-        document.getElementById('start-game-area').style.display = 'block';
-        document.getElementById('start-game-btn').textContent = '▶ START YOUR TURN — Team ' + gameState.currentTeam;
-        document.getElementById('nonhost-wait-msg').style.display = 'none';
-    } else {
-        document.getElementById('start-game-area').style.display = 'none';
-        document.getElementById('nonhost-wait-msg').style.display = 'block';
-        document.getElementById('nonhost-wait-msg').textContent = '⏳ Waiting for Team ' + gameState.currentTeam + ' to start their turn...';
-    }
+    // Hide game elements
     document.getElementById('game-controls').style.display = 'none';
-    document.getElementById('start-turn-btn').style.display = 'none';
     document.getElementById('skip-btn').style.display = 'none';
     document.getElementById('end-turn-btn').style.display = 'none';
     document.getElementById('current-word-display').style.display = 'none';
     document.getElementById('guess-area').style.display = 'none';
+
+    // Show start to the team whose turn it now is
+    if (myTeam === gameState.currentTeam) {
+        document.getElementById('start-game-area').style.display = 'block';
+        var btn = document.getElementById('start-game-btn');
+        btn.disabled = false; btn.textContent = '▶ Start Your Turn — Team ' + gameState.currentTeam;
+        btn.style.background = 'linear-gradient(135deg,#00c853,#00e676)';
+        btn.style.border = '2px solid rgba(0,230,118,0.7)';
+        btn.style.color = '#000'; btn.style.cursor = 'pointer';
+        document.getElementById('start-game-hint').style.display = 'none';
+        document.getElementById('nonhost-wait-msg').style.display = 'none';
+    } else {
+        document.getElementById('start-game-area').style.display = 'none';
+        document.getElementById('nonhost-wait-msg').style.display = 'block';
+        document.getElementById('nonhost-wait-msg').textContent = '⏳ Waiting for Team ' + gameState.currentTeam + ' to start...';
+    }
+
+    var tl = document.getElementById('turn-label');
+    tl.textContent = "Team " + gameState.currentTeam + "'s Turn";
+}
+
+// ─── Reset ────────────────────────────────────────────────────
+function resetGame() {
+    clearInterval(gameState.timerInterval);
+    gameState = { started:false, currentTeam:1, scores:{1:0,2:0}, timeLeft:originalTime, timerInterval:null, words:gameState.words, currentWordIndex:0, wordsRevealedThisTurn:0 };
+    updateScores(); updateTimerDisplay();
     document.getElementById('contributions-list').innerHTML = '';
-    document.getElementById('turn-label').textContent = 'Team 1\'s turn';
-    document.getElementById('start-turn-btn').textContent = '▶ Start Turn — Team 1';
-    addLog('🔄 Game reset!');
-    toggleResetGame();
+    document.getElementById('game-controls').style.display = 'none';
+    document.getElementById('current-word-display').style.display = 'none';
+    document.getElementById('guess-area').style.display = 'none';
+    document.getElementById('turn-label').textContent = "Team 1's Turn";
+    // Re-show start for correct player
+    if (myTeam === 1) {
+        document.getElementById('start-game-area').style.display = 'block';
+        document.getElementById('nonhost-wait-msg').style.display = 'none';
+    } else {
+        document.getElementById('start-game-area').style.display = 'none';
+        document.getElementById('nonhost-wait-msg').style.display = 'block';
+        document.getElementById('nonhost-wait-msg').textContent = '⏳ Waiting for Team 1 to start...';
+    }
+    addLog('🔄 Game reset!'); toggleResetGame();
 }
 
-// ── Scores ────────────────────────────────────────────────────
+// ─── Scores & Contributions ───────────────────────────────────
 function updateScores() {
-    document.getElementById('score-team1').textContent = gameState.scores[1];
-    document.getElementById('score-team2').textContent = gameState.scores[2];
-    document.getElementById('team1-score').textContent = gameState.scores[1];
-    document.getElementById('team2-score').textContent = gameState.scores[2];
+    ['team1-score','score-team1'].forEach(function(id) { var el=document.getElementById(id); if(el) el.textContent=gameState.scores[1]; });
+    ['team2-score','score-team2'].forEach(function(id) { var el=document.getElementById(id); if(el) el.textContent=gameState.scores[2]; });
 }
-
-// ── Contributions ─────────────────────────────────────────────
-function addContribution(word, correct) {
-    var list = document.getElementById('contributions-list');
+function addContribution(word) {
     var li = document.createElement('li');
     li.className = 'card__list-item with-buttons';
-    li.innerHTML = '<div class="card__info"><div class="card__info-text"><p class="color-cyan">' + username + '</p></div></div>'
-        + '<div class="card__list-buttons"><button class="btn card-btn-orange" style="background:rgba(0,200,100,0.3);color:#4dff91;">✅ ' + word + '</button></div>';
+    li.innerHTML = '<div class="card__info"><div class="card__info-text"><p class="color-cyan">' + username + '</p></div></div><div class="card__list-buttons"><button class="btn card-btn-orange" style="background:rgba(0,200,100,0.3);color:#4dff91;">✅ '+word+'</button></div>';
+    var list = document.getElementById('contributions-list');
     list.insertBefore(li, list.firstChild);
 }
 
-// ── Game log ──────────────────────────────────────────────────
+// ─── Log ──────────────────────────────────────────────────────
 function addLog(msg) {
     var el = document.getElementById('game-log-content');
     if (!el) return;
     var p = document.createElement('p');
     p.className = 'taboo__gamelog-text';
     p.innerHTML = msg;
-    p.style.borderLeft = '2px solid rgba(0,229,255,0.3)';
-    p.style.paddingLeft = '8px';
-    p.style.marginBottom = '6px';
+    p.style.cssText = 'border-left:2px solid rgba(0,229,255,0.3);padding-left:8px;margin-bottom:6px;';
     el.insertBefore(p, el.firstChild);
 }
 
-// ── Helpers ───────────────────────────────────────────────────
-function shuffle(arr) {
-    var a = arr.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-}
+// ─── Helpers ──────────────────────────────────────────────────
+function shuffle(arr) { var a=arr.slice(); for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+function similarity(a,b) { if(a===b)return 1; var lg=a.length>b.length?a:b,sh=a.length>b.length?b:a; return(lg.length-levenshtein(lg,sh))/lg.length; }
+function levenshtein(a,b) { var dp=[]; for(var i=0;i<=b.length;i++){dp[i]=[i];for(var j=1;j<=a.length;j++)dp[i][j]=i===0?j:Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(b[i-1]===a[j-1]?0:1));} return dp[b.length][a.length]; }
 
-function similarity(a, b) {
-    if (a === b) return 1;
-    var longer = a.length > b.length ? a : b;
-    var shorter = a.length > b.length ? b : a;
-    var dist = levenshtein(longer, shorter);
-    return (longer.length - dist) / longer.length;
-}
-
-function levenshtein(a, b) {
-    var dp = [];
-    for (var i = 0; i <= b.length; i++) {
-        dp[i] = [i];
-        for (var j = 1; j <= a.length; j++) {
-            dp[i][j] = i === 0 ? j : Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+(b[i-1]===a[j-1]?0:1));
-        }
-    }
-    return dp[b.length][a.length];
-}
-
-// ── Logout ────────────────────────────────────────────────────
-function logout() {
-    localStorage.removeItem('scipher_token');
-    localStorage.removeItem('scipher_user');
-    window.location.href = './login.html';
-}
+// ─── Auth ─────────────────────────────────────────────────────
+function logout() { localStorage.removeItem('scipher_token'); localStorage.removeItem('scipher_user'); window.location.href='./login.html'; }
 </script>
 
 </body>
